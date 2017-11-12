@@ -192,7 +192,7 @@ def combine(f, args):
     elif len(args) == 3:
         return Tree(f, args[0], args[1], args[2])
     else:
-        raise Exception, "Incorrect arguments: {} {}".format(f, str(args))
+        raise Exception("Incorrect arguments: {} {}".format(f, str(args)))
     
 def parse(s):
     """Converts a string representation of a rule into a Tree"""
@@ -302,7 +302,7 @@ class Tree:
                 else:
                     return subeval(self.right)
         except Exception as e:
-            print e
-            print "Expression = ", self
-            print " with cards =", cards
+            print(e)
+            print("Expression = ", self)
+            print(" with cards =", cards)
             raise
