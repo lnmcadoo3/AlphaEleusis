@@ -12,6 +12,7 @@ from new_eleusis import *
 #This will hold the representation of all of the cards, 
 #   both legal and illegal, that have been played
 BOARD = []
+RULE = None
 
 def scientist():
     rule = None
@@ -50,14 +51,41 @@ def score():
 
 
 def play(card):
-    pass
+    #Grab the 2 previous cards:
+    b = boardState()
+    previous2 = None
+    previous2 = None
+    if(len(b) >= 1):
+        previous = b[-1][0]
+    if(len(b) >= 2):
+        previous2 = b[-2][0]
+    legal = RULE.evaluate((previous2, previous, card))
+
+    #Should be the only place that BOARD is updated
+    if(legal):
+        BOARD.append((card, []))
+    else:
+        BOARD[-1][1].append(card)
+
+    return legal
 
 def boardState():
     return BOARD
 
+def set_rule(rule):
+    #Maybe there's a better way to do this
+    global RULE
+    RULE = parse(rule)
 
 def main():
-    rule = parse("equal(color(previous), color(current))")
-    print(rule.evaluate((None, "9C", "9S")))
+    set_rule("equal(color(previous), color(current))")
+    print(RULE)
+    BOARD.append(("9D", []))
+    #BOARD.append(("5C", []))
+
+    print(play("AC"))
+    print(play("5H"))
+
+    print(boardState())
 
 main()
