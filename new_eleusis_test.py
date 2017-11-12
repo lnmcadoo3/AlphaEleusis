@@ -192,8 +192,8 @@ class TestNewEleusis(unittest.TestCase):
         self.assertFalse(self.eval_tree(notf, True))
 
         cards = ("3D", "7H", "AC")
-        self.assertEquals("5H", self.eval_if_tree(iff, True, "5H", "AS"), cards)
-        self.assertEquals("AS", self.eval_if_tree(iff, False, "5H", "AS"), cards)
+        self.assertEqual("5H", self.eval_if_tree(iff, True, "5H", "AS"), cards)
+        self.assertEqual("AS", self.eval_if_tree(iff, False, "5H", "AS"), cards)
 
 ##    def test_tree(self):
 ##        self.assertEqual("""Tree(iff(Tree(equal(Tree(suit('previous')),
