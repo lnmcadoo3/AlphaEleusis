@@ -3,7 +3,7 @@
 # Dr. Matuszek
 # 
 #Authors:
-# Pat Jenkins
+# Patrick Jenkins
 # Leslie McAdoo
 # Akshay Subramanya
 
