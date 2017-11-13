@@ -1,6 +1,6 @@
 # ALPHA Eleusis
 # CMSC 671
-# Dr. M
+# Dr. Matuszek
 # 
 #Authors:
 # Patrick Jenkins
