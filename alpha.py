@@ -6,7 +6,7 @@ Dr. Matuszek
 Authors:
     Patrick Jenkins
     Leslie McAdoo
-    Akshay Subramanya
+    Akshayvarun Subramanya
 """
 
 from new_eleusis import *
