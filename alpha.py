@@ -208,12 +208,30 @@ def set_rule(rule):
     global RULE
     RULE = parse(rule)
 
+def play_game(rule, legals):
+    """
+    Input: A rule for a game, and the first 2 plays for that rule
+    Output: The score for the scientist after playing with that rule
+    """
+    if(BOARD):
+        BOARD = None
+    if(RULE):
+        RULE = None
+
+    set_rule(rule)
+    for i in legals:
+        BOARD.append((i, []))
+
+    print(scientist())
+    print(score())
+
+
+
 def main():
     set_rule("equal(color(previous), color(current))")
     deal_hand()
     print(RULE)
     BOARD.append(("9D", []))
-    #BOARD.append(("5C", []))
 
     print(play("AC"))
     print(play("5H"))
@@ -221,5 +239,12 @@ def main():
     create_datum("6D", False)
 
     print(boardState())
+
+    """
+    rules = []
+    rules.append(("equal(color(previous), color(current))", ("9D", "3H")))
+    for (r, legal) in rules:
+        play_game(r, legal)
+    """
 
 main()
