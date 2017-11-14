@@ -52,7 +52,7 @@ def deal_hand():
         for value in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']:
             HAND.append((suit, value))
 
-def create_datum(card):
+def create_datum(card, truth):
     """
     Input: The last card played
     Output: A datum for the training set, based on the previous 2 cards
@@ -66,11 +66,25 @@ def create_datum(card):
     cards = [prev2, prev, card]
 
     # we need suit, parity, color...
-    individuals = [suit, even, color]
+    individuals = [suit, even, color, is_royal]
 
     features = [x(y) for y in cards for x in individuals]
     print(features)
 
+    # unfortunately we need features for comparing values (for each card) 
+    #   to the numbers 1 to 13, to encompass numerical differences
+    # this makes the feature list gigantic
+    features += [x(str(value(y)), str(z)) for y in cards for z in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] for x in [greater, equal]]
+
+    # compare the deck values of the cards to each other
+    features += ([x(card, y) for y in [prev, prev2] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]])
+
+    #TODO: add anything else here that could possibly be a predicate that we split on
+
+    # include the classification
+    features.append(truth)
+
+    print(features, len(features))
     return features
 
 def retrain(training_data):
@@ -106,7 +120,7 @@ def scientist():
         truth = play(card)
 
         # TODO: Add the card (and its precessors to the training data set)
-        training_data.append(create_datum(card))
+        training_data.append(create_datum(card, truth))
 
         # if we are incorrect
         if(guess != truth):
@@ -204,7 +218,7 @@ def main():
     print(play("AC"))
     print(play("5H"))
 
-    create_datum("6D")
+    create_datum("6D", False)
 
     print(boardState())
 
