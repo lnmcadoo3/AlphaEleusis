@@ -66,7 +66,7 @@ def scientist():
     Also updates the board state
     """
     cards_played = 0
-    guesses_correct = 
+    guesses_correct = 0
 
     # this should be the running list of training data (so that we don't have to recompute)
     training_data = []
@@ -86,7 +86,7 @@ def scientist():
 
         # if we are incorrect
         if(guess != truth):
-            #retrain
+            # retrain
             guesses_correct = 0
         # if we guessed right
         else:
