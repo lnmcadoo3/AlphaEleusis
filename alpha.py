@@ -58,12 +58,21 @@ def create_datum(card):
     """
     return None
 
+def retrain(training_data):
+    """
+    Input: Training data
+    Output: A decision tree representing our agent's hypothesis
+    """
+    return None
+
+
 def scientist():
     """
     Input: None
     Output: Returns the <rule-expression> the player has found
     
     Also updates the board state
+    Requires that 2 legal cards have been played
     """
     cards_played = 0
     guesses_correct = 0
@@ -86,7 +95,7 @@ def scientist():
 
         # if we are incorrect
         if(guess != truth):
-            # retrain
+            retrain(training_data)
             guesses_correct = 0
         # if we guessed right
         else:
