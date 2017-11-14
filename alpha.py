@@ -28,7 +28,7 @@ def __pick_card():
     """
     for card in HAND:
         # if card is illegal under the hypothesis, play it
-        if HYPOTHESIS:
+        if not HYPOTHESIS.evaluate(card):
             # TODO: phase II should remove the card from the hand
             return card
         
@@ -52,6 +52,12 @@ def deal_hand():
         for value in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']:
             HAND.append((suit, value))
 
+def create_datum(card):
+    """
+    Takes in a card, grabs the board state, and composes an element of the training data set
+    """
+    return None
+
 def scientist():
     """
     Input: None
@@ -59,17 +65,39 @@ def scientist():
     
     Also updates the board state
     """
-    rule = None
     cards_played = 0
+    guesses_correct = 
 
-    while(not rule and cards_played < 200):
+    # this should be the running list of training data (so that we don't have to recompute)
+    training_data = []
+
+    while(cards_played < 200):
         cards_played += 1
 
-        #Quitting criterion
-        if(cards_played > 20):
-            pass
+        # somehow choose a card
+        card = __pick_card()
 
-    return rule
+        # our guess vs. actual truth
+        guess = HYPOTHESIS.evaluate(card)
+        truth = play(card)
+
+        # TODO: Add the card (and its precessors to the training data set)
+        #training_data.append(create_datum(card))
+
+        # if we are incorrect
+        if(guess != truth):
+            #retrain
+            guesses_correct = 0
+        # if we guessed right
+        else:
+            guesses_correct += 1
+
+
+        # quitting criterion (subject to change)
+        if(cards_played > 20 and guesses_correct > 10):
+            return HYPOTHESIS
+
+    return HYPOTHESIS
 
 def score():
     """
@@ -138,7 +166,6 @@ def set_rule(rule):
     Output: None
     Set the current rule, using functions provided in new_eleusis.py
     """
-    #Maybe there's a better way to do this
     global RULE
     RULE = parse(rule)
 
