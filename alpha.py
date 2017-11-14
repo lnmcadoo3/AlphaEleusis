@@ -54,9 +54,24 @@ def deal_hand():
 
 def create_datum(card):
     """
-    Takes in a card, grabs the board state, and composes an element of the training data set
+    Input: The last card played
+    Output: A datum for the training set, based on the previous 2 cards
+
+    Requires that 2 legal cards have been played
     """
-    return None
+    b = boardState()
+    prev = b[-1][0]
+    prev2 = b[-2][0]
+
+    cards = [prev2, prev, card]
+
+    # we need suit, parity, color...
+    individuals = [suit, even, color]
+
+    features = [x(y) for y in cards for x in individuals]
+    print(features)
+
+    return features
 
 def retrain(training_data):
     """
@@ -91,10 +106,11 @@ def scientist():
         truth = play(card)
 
         # TODO: Add the card (and its precessors to the training data set)
-        #training_data.append(create_datum(card))
+        training_data.append(create_datum(card))
 
         # if we are incorrect
         if(guess != truth):
+            # will be a DT method
             retrain(training_data)
             guesses_correct = 0
         # if we guessed right
@@ -187,6 +203,8 @@ def main():
 
     print(play("AC"))
     print(play("5H"))
+
+    create_datum("6D")
 
     print(boardState())
 
