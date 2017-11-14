@@ -1,11 +1,13 @@
-# ALPHA Eleusis
-# CMSC 671
-# Dr. Matuszek
-# 
-#Authors:
-# Patrick Jenkins
-# Leslie McAdoo
-# Akshay Subramanya
+"""
+ALPHA Eleusis
+CMSC 671
+Dr. Matuszek
+ 
+Authors:
+    Patrick Jenkins
+    Leslie McAdoo
+    Akshay Subramanya
+"""
 
 from new_eleusis import *
 import random
@@ -51,6 +53,12 @@ def deal_hand():
             HAND.append((suit, value))
 
 def scientist():
+    """
+    Input: None
+    Output: Returns the <rule-expression> the player has found
+    
+    Also updates the board state
+    """
     rule = None
     cards_played = 0
 
@@ -64,6 +72,14 @@ def scientist():
     return rule
 
 def score():
+    """
+    Input: None
+    Output: Returns the score for the most recent round. (Low is better!)
+    Calculate by adding points as follows: +1 for every successful play over 20
+    and under 200; +2 for every failed play; + 15 for a rule that is not
+    equivalent to the correct rule; +30 for a rule that does not describe all
+    cards on the board.
+    """
     board = boardState()
     legal_plays = {}
     illegal_plays = {}
@@ -85,6 +101,10 @@ def score():
 
 
 def play(card):
+    """
+    Input: <card>
+    Output: True if the play was legal, False otherwise
+    """
     #Grab the 2 previous cards:
     b = boardState()
     previous2 = None
@@ -104,9 +124,20 @@ def play(card):
     return legal
 
 def boardState():
+    """
+    Returns a list of plays so far as a sequential list of tuples,
+    in order of play. Each tuple will contain a card played in the main
+    sequence (that is, played successfully), then a list of all cards played
+    unsuccessfully after it, which may be empty.
+    """
     return BOARD
 
 def set_rule(rule):
+    """
+    Input: <rule-expression>
+    Output: None
+    Set the current rule, using functions provided in new_eleusis.py
+    """
     #Maybe there's a better way to do this
     global RULE
     RULE = parse(rule)
