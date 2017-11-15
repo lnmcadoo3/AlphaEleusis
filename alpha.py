@@ -248,7 +248,7 @@ def main():
     print("God says...")
     print("Legal") if play(next_card) else print("Illegal")
 
-    #create_datum("6D", False)
+    create_datum("6D", False)
 
     #print(boardState())
 
