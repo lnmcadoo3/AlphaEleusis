@@ -239,9 +239,14 @@ def main():
     print(HAND)
     
     BOARD.append(("9D", []))
+    BOARD.append(("8H", []))
 
-    #print(play("AC"))
-    #print(play("5H"))
+    next_card = __pick_card_at_random()
+    print("Player is playing:")
+    print(next_card)
+    
+    print("God says...")
+    print("Legal") if play(next_card) else print("Illegal")
 
     #create_datum("6D", False)
 
