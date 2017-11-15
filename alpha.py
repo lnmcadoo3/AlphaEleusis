@@ -72,7 +72,7 @@ def create_datum(card, truth):
     # unfortunately we need features for comparing values (for each card) 
     #   to the numbers 1 to 13, to encompass numerical differences
     # this makes the feature list gigantic
-    features += [x(str(value(y)), str(z)) for y in cards for z in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] for x in [greater, equal]]
+    features += [x(str(y[:-1]), str(z)) for y in cards for z in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] for x in [greater, equal]]
 
     # compare the deck values of the cards to each other
     features += ([x(card, y) for y in [prev, prev2] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]])
@@ -248,7 +248,7 @@ def main():
     print("God says...")
     print("Legal") if play(next_card) else print("Illegal")
 
-    #create_datum("6D", False)
+    create_datum("6D", False)
 
     #print(boardState())
 
