@@ -19,7 +19,7 @@ RULE = None
 HYPOTHESIS = None
 HAND = []
 
-def __pick_card():
+def pick_card():
     """
     Helper function that picks a card from the HAND, for Phase I, the hand
     includes all possible cards
@@ -32,9 +32,9 @@ def __pick_card():
             # TODO: phase II should remove the card from the hand
             return card
         
-    return __pick_card_at_random()
+    return pick_card_at_random()
 
-def __pick_card_at_random():
+def pick_card_at_random():
     """
     Helper function that returns a random card from the hand
     """
@@ -111,7 +111,7 @@ def scientist():
         cards_played += 1
 
         # somehow choose a card
-        card = __pick_card()
+        card = pick_card()
 
         # our guess vs. actual truth
         guess = HYPOTHESIS.evaluate(card)
@@ -241,7 +241,8 @@ def main():
     BOARD.append(("9D", []))
     BOARD.append(("8H", []))
 
-    next_card = __pick_card_at_random()
+    next_card = pick_card_at_random()
+    #next_card = pick_card()
     print("Player is playing:")
     print(next_card)
     
