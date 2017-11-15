@@ -38,19 +38,17 @@ def __pick_card_at_random():
     """
     Helper function that returns a random card from the hand
     """
-    suits = ['C', 'D', 'H', 'S']
-    values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
     # TODO: Phase II should remove the played card from the hand
-    return random.choice(HAND) if HAND else (random.choice(suits), random.choice(values))
+    return random.choice(HAND)
 
 def deal_hand():
     """
     Deals a hand to the player, if this is phase one, this is every possible card
     """
     # TODO: Phase II
-    for suit in ['C', 'D', 'H', 'S']:
-        for value in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']:
-            HAND.append((suit, value))
+    for suit in ["C", "D", "H", "S"]:
+        for value in ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]:
+            HAND.append(value + suit)
 
 def create_datum(card, truth):
     """
@@ -228,17 +226,26 @@ def play_game(rule, legals):
 
 
 def main():
+    print("Starting a new game of New Eleusis!")
+    
+    print("God is choosing a rule...")
     set_rule("equal(color(previous), color(current))")
-    deal_hand()
+    print("God chose the rule:")
     print(RULE)
+    
+    print("Dealing the player a hand...")
+    deal_hand()
+    print("Players hand is:")
+    print(HAND)
+    
     BOARD.append(("9D", []))
 
-    print(play("AC"))
-    print(play("5H"))
+    #print(play("AC"))
+    #print(play("5H"))
 
-    create_datum("6D", False)
+    #create_datum("6D", False)
 
-    print(boardState())
+    #print(boardState())
 
     """
     rules = []
