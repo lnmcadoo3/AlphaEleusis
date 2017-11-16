@@ -29,7 +29,7 @@ def pick_card():
     """
     for card in HAND:
         # if card is illegal under the hypothesis, play it
-        if not HYPOTHESIS.evaluate(card):
+        if HYPOTHESIS and not HYPOTHESIS.evaluate(card):
             # TODO: phase II should remove the card from the hand
             return card
         
@@ -83,7 +83,7 @@ def create_datum(card, truth):
     # include the classification
     features.append(truth)
 
-    print(card, features, len(features))
+    #print(card, features, len(features))
     return tuple(features)
 
 def retrain(training_data):
@@ -108,28 +108,47 @@ def scientist():
     # this should be the running list of training data (so that we don't have to recompute)
     training_data = []
 
+    dt = DecisionTree()
+
     while(cards_played < 200):
         cards_played += 1
 
         # somehow choose a card
         card = pick_card()
 
+        print("CARD", card)
+
         # our guess vs. actual truth
-        guess = HYPOTHESIS.evaluate(card)
         truth = play(card)
+        datum = create_datum(card, truth)
+
+        #This should be a fixed constant
+        attrs = [str(i) for i in range(len(datum))]
+
+        if(cards_played > 1):
+            guess = dt.predict(attrs, [datum])[0]
+            if(guess == "Null"):
+                guess = False
+        else:
+            guess = False
+
+        print("GUESS", guess)
 
         # TODO: Add the card (and its precessors to the training data set)
-        training_data.append(create_datum(card, truth))
+        training_data.append(datum)
 
         # if we are incorrect
-        if(guess != truth):
-            # will be a DT method
-            retrain(training_data)
+        if(guess != truth or cards_played == 1):
+            #print("BUILDING TREE")
+            dt.build_tree(training_data, attrs[-1], attrs)
+            print(dt.tree)
             guesses_correct = 0
         # if we guessed right
         else:
             guesses_correct += 1
 
+        if(cards_played > 1):
+            print(dt.tree, guesses_correct)
 
         # quitting criterion (subject to change)
         if(cards_played > 20 and guesses_correct > 10):
@@ -242,13 +261,17 @@ def main():
     BOARD.append(("9D", []))
     BOARD.append(("8H", []))
 
-    next_card = pick_card_at_random()
+    scientist()
+
+    #next_card = pick_card_at_random()
     #next_card = pick_card()
     #print("Player is playing:")
     #print(next_card)
     
     #print("God says...")
     #print("Legal") if play(next_card) else print("Illegal")
+
+    """
     play("6D")
     x = create_datum("6D", True)
     play("7C")
@@ -272,6 +295,8 @@ def main():
 
 
     print(len(x))
+
+    """
 
     #print(boardState())
 

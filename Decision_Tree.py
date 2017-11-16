@@ -146,6 +146,8 @@ class DecisionTree():
     def predict(self,attributes,X_test):
         predictions = []
         res = ""
+        if(isinstance(self.tree, bool)):
+            return [self.tree]
         for entry in X_test:
             temp_dict = self.tree.copy()
         while(isinstance(temp_dict, dict)):
