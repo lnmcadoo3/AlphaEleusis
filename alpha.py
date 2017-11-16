@@ -251,7 +251,7 @@ def main():
 
     create_datum("6D", False)
 
-    #print(boardState())
+    print(boardState())
 
     """
     rules = []
