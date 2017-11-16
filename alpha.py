@@ -10,6 +10,7 @@ Authors:
 """
 
 from new_eleusis import *
+from Decision_Tree import DecisionTree
 import random
 
 #This will hold the representation of all of the cards, 
@@ -67,7 +68,7 @@ def create_datum(card, truth):
     individuals = [suit, even, color, is_royal]
 
     features = [x(y) for y in cards for x in individuals]
-    print(features)
+    #print(features)
 
     # unfortunately we need features for comparing values (for each card) 
     #   to the numbers 1 to 13, to encompass numerical differences
@@ -82,8 +83,8 @@ def create_datum(card, truth):
     # include the classification
     features.append(truth)
 
-    print(features, len(features))
-    return features
+    print(card, features, len(features))
+    return tuple(features)
 
 def retrain(training_data):
     """
@@ -243,13 +244,34 @@ def main():
 
     next_card = pick_card_at_random()
     #next_card = pick_card()
-    print("Player is playing:")
-    print(next_card)
+    #print("Player is playing:")
+    #print(next_card)
     
-    print("God says...")
-    print("Legal") if play(next_card) else print("Illegal")
+    #print("God says...")
+    #print("Legal") if play(next_card) else print("Illegal")
+    play("6D")
+    x = create_datum("6D", True)
+    play("7C")
+    y = create_datum("7C", False)
+    play("8H")
+    z = create_datum("8H", True)
+    play("9S")
+    x1 = create_datum("9S", False)
+    play("5H")
+    x2 = create_datum("5H", True)
 
-    create_datum("6D", False)
+
+
+    attrs = [str(i) for i in range(len(x))]
+
+    dt = DecisionTree()
+    dt.build_tree([x,y,z,x1,x2], attrs[-1], attrs)
+
+    print(dt.predict(attrs, [z]))
+    print(dt.tree)
+
+
+    print(len(x))
 
     #print(boardState())
 

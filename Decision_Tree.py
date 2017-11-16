@@ -8,16 +8,17 @@ class Node():
         self.value = val
         if (isinstance(dictionary, dict)):
             self.children = dictionary.keys()
+
 #Tells which class has majority in given data
 def majorClass(attributes, data, target):
     frequency = {}
     index = attributes.index(target)
 
-    for tuple in data:
-        if (frequency.has_key(tuple[index])):
-            frequency[tuple[index]] += 1 
+    for t in data:
+        if (t[index] in frequency):
+            frequency[t[index]] += 1 
         else:
-            frequency[tuple[index]] = 1
+            frequency[t[index]] = 1
 
     maximum_value = 0
     major = ""
@@ -41,16 +42,16 @@ def entropy(attributes, data, targetAttr):
             break
         i = i + 1
 
-    i = i - 1
+    #i = i - 1
     for entry in data:
-        if (frequency.has_key(entry[i])):
+        if (entry[i] in frequency):
             frequency[entry[i]] += 1.0
         else:
             frequency[entry[i]]  = 1.0
 
     for freq in frequency.values():
         E += (-freq/len(data)) * math.log(freq/len(data), 2) 
-        
+  
     return E
 
 #Calculates information gain when a particular attribute is chosen for splitting
@@ -59,8 +60,9 @@ def information_gain(attributes, data, attr, targetAttr):
     subsetEntropy = 0.0
     i = attributes.index(attr)
 
+    # computes the frequencies for each value of attr
     for entry in data:
-        if (frequency.has_key(entry[i])):
+        if (entry[i] in frequency):
             frequency[entry[i]] += 1.0
         else:
             frequency[entry[i]]  = 1.0
@@ -71,15 +73,18 @@ def information_gain(attributes, data, attr, targetAttr):
         subsetEntropy += valProb * entropy(attributes, dataSubset, targetAttr)
 
     return (entropy(attributes, data, targetAttr) - subsetEntropy)
+
 # Chooses the attribute based on information gain
 def choose_best_attribute(data, attributes, target):
     best_attr = attributes[0]
     maxGain = 0;
     for attr in attributes:
-        newGain = information_gain(attributes, data, attr, target) 
-        if newGain>maxGain:
-            maxGain = newGain
-            best = attr
+        # don't use the target as an attribute to split on
+        if(attr != target):
+            newGain = information_gain(attributes, data, attr, target) 
+            if newGain > maxGain:
+                maxGain = newGain
+                best_attr = attr
     return best_attr
 
 # Gets unique values for a particular attribute 
@@ -134,39 +139,41 @@ def recursive_build(data,target,attributes):
 
 
 class DecisionTree():
+
     def build_tree(self,X_train,y_train,attributes):
-	self.tree  = recursive_build(X_train,y_train,attributes)
+        self.tree  = recursive_build(X_train,y_train,attributes)
+
     def predict(self,attributes,X_test):
-	predictions = []
-	res = ""
-	for entry in X_test:
-	    temp_dict = self.tree.copy()
-	    while(isinstance(temp_dict, dict)):
-	        root = Node(temp_dict.keys()[0], temp_dict[temp_dict.keys()[0]])
-	        temp_dict = temp_dict[temp_dict.keys()[0]]
-	        index = attributes.index(root.value)
-	        value = entry[index]
-	        if(value in temp_dict.keys()):
-                    child = Node(value, temp_dict[value])
-		    res = temp_dict[value]
-		    temp_dict = temp_dict[value]
-	        else:
-		    res = "Null"
-		    break
-	    predictions.append(res)
-	return predictions
-	
+        predictions = []
+        res = ""
+        for entry in X_test:
+            temp_dict = self.tree.copy()
+        while(isinstance(temp_dict, dict)):
+            root = Node(list(temp_dict.keys())[0], temp_dict[list(temp_dict.keys())[0]])
+            temp_dict = temp_dict[list(temp_dict.keys())[0]]
+            index = attributes.index(root.value)
+            value = entry[index]
+            if(value in temp_dict.keys()):
+                child = Node(value, temp_dict[value])
+                res = temp_dict[value]
+                temp_dict = temp_dict[value]
+            else:
+                res = "Null"
+                break
+        predictions.append(res)
+        return predictions
+
 if __name__ == "__main__":
-	data = [('0','0','0'),
-	('0','1','1'),
-	('1','0','1'),
-	('1','1','0')]		
-	attributes = ['X1','X2','Y']
-	target = attributes[-1]	
-	X_train = data[:-1]
-	X_test = data[-1:]
-	tree = DecisionTree()
-	tree.build_tree(X_train, target,attributes)
-	predictions = tree.predict(attributes,X_test)	
-	print(predictions)
-	print(tree.tree)
+    data = [('0','0','0'),
+    ('0','1','1'),
+    ('1','0','1'),
+    ('1','1','0')]		
+    attributes = ['X1','X2','Y']
+    target = attributes[-1]	
+    X_train = data[:-1]
+    X_test = data[-1:]
+    tree = DecisionTree()
+    tree.build_tree(X_train, target, attributes)
+    predictions = tree.predict(attributes,X_test)
+    print(predictions)
+    print(tree.tree)
