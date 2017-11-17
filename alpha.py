@@ -147,7 +147,8 @@ def scientist():
         else:
             guess = False
 
-        print("GUESS", guess, "TRUTH", truth)
+        print("GUESS:", guess)
+        print("TRUTH:", truth)
 
         # TODO: Add the card (and its precessors to the training data set)
         training_data.append(datum)
@@ -169,7 +170,7 @@ def scientist():
             print(cards_played)
             return dt, training_data
 
-    print(cards_played)
+    print("CARDS PLAYED:", cards_played)
     return dt, training_data, cards
 
 def score():
