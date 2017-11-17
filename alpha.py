@@ -94,7 +94,7 @@ def scientist():
     Also updates the board state
     Requires that 2 legal cards have been played
     """
-    cards_played = 0
+    cards_played    = 0
     guesses_correct = 0
 
     # this should be the running list of training data (so that we don't have to recompute)
@@ -107,8 +107,7 @@ def scientist():
 
         # somehow choose a card
         card = pick_card()
-
-        print("CARD", card)
+        print("\nCARD", card)
 
         # our guess vs. actual truth
         truth = play(card)
@@ -117,9 +116,9 @@ def scientist():
         #This should be a fixed constant
         attrs = [str(i) for i in range(len(datum))]
 
-        if(cards_played > 1):
+        if cards_played > 1:
             guess = dt.predict(attrs, [datum])[0]
-            if(guess == "Null"):
+            if guess == "Null":
                 guess = False
         else:
             guess = False
@@ -130,8 +129,8 @@ def scientist():
         training_data.append(datum)
 
         # if we are incorrect
-        if(guess != truth or cards_played == 1):
-            #print("BUILDING TREE")
+        if guess != truth or cards_played == 1:
+            print("RE-BUILDING TREE")
             dt.build_tree(training_data, attrs[-1], attrs)
             print(dt.tree)
             guesses_correct = 0
@@ -139,11 +138,11 @@ def scientist():
         else:
             guesses_correct += 1
 
-        if(cards_played > 1):
+        if cards_played >= 1:
             print(dt.tree, guesses_correct)
 
         # quitting criterion (subject to change)
-        if(cards_played > 20 and guesses_correct > 10):
+        if(cards_played > 20 or guesses_correct > 10):
             return HYPOTHESIS
 
     return HYPOTHESIS
@@ -176,7 +175,6 @@ def score():
 
     return score
 
-
 def play(card):
     """
     Input: <card>
@@ -184,7 +182,7 @@ def play(card):
     """
     #Grab the 2 previous cards:
     b = boardState()
-    previous2 = None
+    previous  = None
     previous2 = None
     if(len(b) >= 1):
         previous = b[-1][0]
@@ -234,8 +232,6 @@ def play_game(rule, legals):
 
     print(scientist())
     print(score())
-
-
 
 def main():
     print("Starting a new game of New Eleusis!")

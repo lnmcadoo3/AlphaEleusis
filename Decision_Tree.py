@@ -24,7 +24,7 @@ def majorClass(attributes, data, target):
     major = ""
 
     for key in frequency.keys():
-        if frequency[key]>maximum_value:
+        if frequency[key] > maximum_value:
             maximum_value = frequency[key]
             major = key
 
@@ -32,9 +32,9 @@ def majorClass(attributes, data, target):
 
 #Calculates Shannon Entropy for data given a target attribute
 def entropy(attributes, data, targetAttr):
-    entropy = 0
-    #frequency = {}
-    #E = 0.0
+    #entropy = 0
+    frequency = {}
+    E = 0.0
 
     # There should be a 1 line pythonic way to do this
     i = 0
@@ -43,25 +43,25 @@ def entropy(attributes, data, targetAttr):
             break
         i = i + 1
 
-    #i = i - 1
-    #for entry in data:
-    #    if entry[i] in frequency:
-    #        frequency[entry[i]] += 1.0
-    #    else:
-    #        frequency[entry[i]]  = 1.0
+    i = i - 1
+    for entry in data:
+        if entry[i] in frequency:
+            frequency[entry[i]] += 1.0
+        else:
+            frequency[entry[i]]  = 1.0
 
     # Source: http://pythonfiddle.com/shannon-entropy-calculation/
-    for x in data:
-        p_x = float(data.count(chr(x[i])) / len(data))
-        if p_x > 0:
-            entropy += -p_x * math.log(p_x, 2)
+    #for x in data:
+    #    p_x = float(data.count(x[i]) / len(data))
+    #    if p_x > 0:
+    #        entropy += -p_x * math.log(p_x, 2)
 
-    return entropy
+    #return entropy
 
-    #for freq in frequency.values():
-    #    E += (-freq/len(data)) * math.log(freq/len(data), 2) 
+    for freq in frequency.values():
+        E += (-freq/len(data)) * math.log(freq/len(data), 2) 
   
-    #return E
+    return E
 
 #Calculates information gain when a particular attribute is chosen for splitting
 def information_gain(attributes, data, attr, targetAttr):
@@ -118,7 +118,7 @@ def get_data(data, attributes, best, Value):
     for entry in data:
         if (entry[index] == Value):
             newEntry = []
-            for i in range(0,len(entry)):
+            for i in range(0, len(entry)):
                 if(i != index):
                     newEntry.append(entry[i])
             new_data.append(newEntry)
@@ -130,11 +130,11 @@ def get_data(data, attributes, best, Value):
 def recursive_build(data, target, attributes):
     data = data[:]
     vals = [record[attributes.index(target)] for record in data]
-    default = majorClass(attributes, data, target)
+    #default = majorClass(attributes, data, target)
 
-    if not data or (len(attributes) - 1) <= 0:
-        return default
-    elif vals.count(vals[0]) == len(vals):
+    #if not data or (len(attributes) - 1) <= 0:
+    #    return default
+    if vals.count(vals[0]) == len(vals):
         return vals[0]
     else:
         best = choose_best_attribute(data, attributes, target)
@@ -144,7 +144,7 @@ def recursive_build(data, target, attributes):
             new_data = get_data(data, attributes, best, val)
             newAttr = attributes[:]
             newAttr.remove(best)
-            subtree = recursive_build(new_data,target,newAttr)
+            subtree = recursive_build(new_data, target, newAttr)
             tree[best][val] = subtree
     
     return tree
