@@ -21,7 +21,8 @@ def majorClass(attributes, data, target):
             frequency[t[index]] = 1
 
     maximum_value = 0
-    major = ""
+    # in case there is no data
+    major = "Null"
 
     for key in frequency.keys():
         if frequency[key]>maximum_value:
@@ -33,35 +34,23 @@ def majorClass(attributes, data, target):
 #Calculates Shannon Entropy for data given a target attribute
 def entropy(attributes, data, targetAttr):
     entropy = 0
-    #frequency = {}
-    #E = 0.0
+    frequency = {}
+    E = 0.0
 
-    # There should be a 1 line pythonic way to do this
-    i = 0
-    for entry in attributes:
-        if (targetAttr == entry):
-            break
-        i = i + 1
+    # get the index of the attribute we want to split on
+    i = attributes.index(targetAttr)
 
-    #i = i - 1
-    #for entry in data:
-    #    if entry[i] in frequency:
-    #        frequency[entry[i]] += 1.0
-    #    else:
-    #        frequency[entry[i]]  = 1.0
+    #This counts up all of the occurences of the values for attribute i
+    for entry in data:
+        if entry[i] in frequency:
+            frequency[entry[i]] += 1.0
+        else:
+            frequency[entry[i]]  = 1.0
 
-    # Source: http://pythonfiddle.com/shannon-entropy-calculation/
-    for x in data:
-        p_x = float(data.count(chr(x[i])) / len(data))
-        if p_x > 0:
-            entropy += -p_x * math.log(p_x, 2)
-
-    return entropy
-
-    #for freq in frequency.values():
-    #    E += (-freq/len(data)) * math.log(freq/len(data), 2) 
+    for freq in frequency.values():
+        E += (-freq/len(data)) * math.log(freq/len(data), 2)
   
-    #return E
+    return E
 
 #Calculates information gain when a particular attribute is chosen for splitting
 def information_gain(attributes, data, attr, targetAttr):
@@ -102,30 +91,33 @@ def choose_best_attribute(data, attributes, target):
 def get_values(data, attributes, attr):
 
     index = attributes.index(attr)
+    values_new = list(set([entry[index] for entry in data]))
     values = []
 
+    
     for entry in data:
         if entry[index] not in values:
             values.append(entry[index])
+    
+    #print(sorted(values))
+
+    if(sorted(values) != sorted(values_new)):
+        print("Broken values")
+        print(values, values_new)
+
 
     return values
 
 #Gets all rows of data where "best" attribute has a value "Value"
 def get_data(data, attributes, best, Value):
-    new_data = [[]]
     index = attributes.index(best)
 
-    for entry in data:
-        if (entry[index] == Value):
-            newEntry = []
-            for i in range(0,len(entry)):
-                if(i != index):
-                    newEntry.append(entry[i])
-            new_data.append(newEntry)
+    new_data = [[]]
 
-    new_data.remove([])
+    # pretty sure this works
+    new_data_x = [tuple(list(entry)[:index] + list(entry)[index+1:]) for entry in data if entry[index] == Value]    
     
-    return new_data
+    return new_data_x
 
 def recursive_build(data, target, attributes):
     data = data[:]
@@ -156,31 +148,60 @@ class DecisionTree():
 
     def predict(self, attributes, X_test):
         predictions = []
-        res = ""
         
-        if(isinstance(self.tree, bool)):
-            return [self.tree]
+        # if we don't have a dictionary
+        if(not isinstance(self.tree, dict)):
+            return [self.tree]*len(X_test)
         
+        # tree is a dictionary now
+        # loop through all of the test data
         for entry in X_test:
             temp_dict = self.tree.copy()
             
-        while(isinstance(temp_dict, dict)):
-            root = Node(list(temp_dict.keys())[0], temp_dict[list(temp_dict.keys())[0]])
-            temp_dict = temp_dict[list(temp_dict.keys())[0]]
-            index = attributes.index(root.value)
-            value = entry[index]
+            # while we are processing a dictionary, we are at least 
+            #   2 levels away from a literal (since each )
+            while(isinstance(temp_dict, dict)):
+
+                # grab the only key in this dictionary
+                attr = list(temp_dict.keys())[0]
+                temp_dict = temp_dict[attr]
+                
+                # get the attribute index of the attribute in question
+                index = attributes.index(attr)
+                # get the value for that entry in the test data
+                value = entry[index]
+
+                # if our value is in the resulting dictionary
+                if(value in temp_dict.keys()):
+                    # maybe this is the end
+                    res = temp_dict[value]
+                    # try and process this (maybe it is a dictionary)
+                    temp_dict = temp_dict[value]
+                # in general, we don't know what to classify this
+                #   TODO: maybe for our case this should be False
+                else:
+                    res = "Null"
+                    break
+
+            # out here, res has the desired value, add to the results
+            predictions.append(res)
             
-            if(value in temp_dict.keys()):
-                child = Node(value, temp_dict[value])
-                res = temp_dict[value]
-                temp_dict = temp_dict[value]
-            else:
-                res = "Null"
-                break
-        
-        predictions.append(res)
-        
         return predictions
+        
+
+    def print_tree(self, t = None, depth = 0):
+        if(t == None):
+            t = self.tree
+        if(isinstance(t, bool)):
+            print(t)
+            return
+        for n in t:
+            print(" "*depth + str(n) + ":", end='')
+            if(isinstance(t[n], dict)):
+                print()
+                self.print_tree(t[n], depth+1)
+            else:
+                print(t[n])
 
 if __name__ == "__main__":
     data = [('0','0','0'),
@@ -196,3 +217,5 @@ if __name__ == "__main__":
     predictions = tree.predict(attributes,X_test)
     print(predictions)
     print(tree.tree)
+    tree.print_tree()
+

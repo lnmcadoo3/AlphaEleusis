@@ -19,6 +19,7 @@ BOARD = []
 RULE = None
 HYPOTHESIS = None
 HAND = []
+ATTRIBUTES = []
 
 def pick_card():
     """
@@ -58,30 +59,52 @@ def create_datum(card, truth):
 
     Requires that 2 legal cards have been played
     """
+    global ATTRIBUTES
+
     b = boardState()
-    prev = b[-1][0]
-    prev2 = b[-2][0]
+    if(truth):
+        prev = b[-2][0]
+        prev2 = b[-3][0]
+    else:
+        prev = b[-1][0]
+        prev2 = b[-2][0]
 
     cards = [prev2, prev, card]
+    cards_att = ["previous2", "previous", "current"]
 
     # we need suit, parity, color...
-    individuals = [suit, even, color, is_royal]
+    individuals = [suit, color, even, is_royal]
+    individuals_att = ["suit", "color", "even", "is_royal"]
 
-    features = [x(y) for y in cards for x in individuals]
+    features = []
+    ATTRIBUTES = []
+
+    features += [x(y) for y in cards for x in individuals]
+    ATTRIBUTES += [x + "(" + str(y) + ")" for y in cards_att for x in individuals_att]
+    #print(ATTRIBUTES)
     #print(features)
+
 
     # unfortunately we need features for comparing values (for each card) 
     #   to the numbers 1 to 13, to encompass numerical differences
     # this makes the feature list gigantic
     features += [x(str(y[:-1]), str(z)) for y in cards for z in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] for x in [greater, equal]]
+    ATTRIBUTES += [x + "(value(" + y + ")," + z + ")" for y in cards_att for z in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] for x in ["greater", "equal"]]
 
     # compare the deck values of the cards to each other
-    features += ([x(card, y) for y in [prev, prev2] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]])
+    features += ([x(card, y) for y in [prev2, prev] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]])
+    ATTRIBUTES += ([x + "(current" + "," + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]] + [x + "(previous, previous2)" for x in ["greater", "equal"]])
+
+    #print(equal(card, prev), card, prev, prev2)
 
     #TODO: add anything else here that could possibly be a predicate that we split on
+    features += ([x(card[:-1], y[:-1]) for y in [prev2, prev] for x in [greater, equal]] + [x(prev[:-1], prev2[:-1]) for x in [greater, equal]])
+    ATTRIBUTES += ([x + "(value(current)" + ",value(" + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]] + [x + "(value(previous), value(previous2))" for x in ["greater", "equal"]])
 
     # include the classification
     features.append(truth)
+    ATTRIBUTES.append("Legal")
+    print(len(ATTRIBUTES))
 
     #print(card, features, len(features))
     return tuple(features)
@@ -99,6 +122,7 @@ def scientist():
 
     # this should be the running list of training data (so that we don't have to recompute)
     training_data = []
+    cards = []
 
     dt = DecisionTree()
 
@@ -115,38 +139,39 @@ def scientist():
         datum = create_datum(card, truth)
 
         #This should be a fixed constant
-        attrs = [str(i) for i in range(len(datum))]
+        #attrs = [str(i) for i in range(len(datum))]
 
         if(cards_played > 1):
-            guess = dt.predict(attrs, [datum])[0]
+            guess = dt.predict(ATTRIBUTES, [datum])[0]
             if(guess == "Null"):
                 guess = False
         else:
             guess = False
 
-        print("GUESS", guess)
+        print("GUESS", guess, "TRUTH", truth)
 
         # TODO: Add the card (and its precessors to the training data set)
         training_data.append(datum)
+        cards.append(card)
 
         # if we are incorrect
         if(guess != truth or cards_played == 1):
             #print("BUILDING TREE")
-            dt.build_tree(training_data, attrs[-1], attrs)
-            print(dt.tree)
+            dt.build_tree(training_data, ATTRIBUTES[-1], ATTRIBUTES)
+            #dt.print_tree()
             guesses_correct = 0
         # if we guessed right
         else:
             guesses_correct += 1
 
-        if(cards_played > 1):
-            print(dt.tree, guesses_correct)
-
         # quitting criterion (subject to change)
-        if(cards_played > 20 and guesses_correct > 10):
-            return HYPOTHESIS
+        if(cards_played > 20 and guesses_correct > 50):
+            dt.print_tree()
+            print(cards_played)
+            return dt, training_data
 
-    return HYPOTHESIS
+    print(cards_played)
+    return dt, training_data, cards
 
 def score():
     """
@@ -184,7 +209,7 @@ def play(card):
     """
     #Grab the 2 previous cards:
     b = boardState()
-    previous2 = None
+    previous = None
     previous2 = None
     if(len(b) >= 1):
         previous = b[-1][0]
@@ -241,7 +266,16 @@ def main():
     print("Starting a new game of New Eleusis!")
     
     print("God is choosing a rule...")
-    set_rule("equal(color(previous), color(current))")
+    #set_rule("equal(color(previous), color(current))")
+    
+    
+    set_rule("""and(
+                        not(and(equal(color(previous), color(previous2)),
+                                equal(color(previous), color(current))) ),
+                        not(and(equal(value(previous), value(previous2)),
+                                equal(value(previous), value(current))) ) )""")
+    
+    
     print("God chose the rule:")
     print(RULE)
     
@@ -253,7 +287,20 @@ def main():
     BOARD.append(("9D", []))
     BOARD.append(("8H", []))
 
-    scientist()
+    dt, training_data, cards = scientist()
+
+    print(boardState())
+
+    # check to make sure the rule fits
+    '''
+    for t in training_data:
+        if(t[-1] != dt.predict(ATTRIBUTES, [t])[0] or t[-1] == False and dt.predict(ATTRIBUTES, [t])[0] == "Null"):
+            print("BROKEN")
+            index = training_data.index(t)
+            print(t, cards[index-2:index+1])
+            print(index)
+            print(dt.predict(ATTRIBUTES, [t]))
+    '''
 
     #next_card = pick_card_at_random()
     #next_card = pick_card()
@@ -263,34 +310,7 @@ def main():
     #print("God says...")
     #print("Legal") if play(next_card) else print("Illegal")
 
-    """
-    play("6D")
-    x = create_datum("6D", True)
-    play("7C")
-    y = create_datum("7C", False)
-    play("8H")
-    z = create_datum("8H", True)
-    play("9S")
-    x1 = create_datum("9S", False)
-    play("5H")
-    x2 = create_datum("5H", True)
-
-
-
-    attrs = [str(i) for i in range(len(x))]
-
-    dt = DecisionTree()
-    dt.build_tree([x,y,z,x1,x2], attrs[-1], attrs)
-
-    print(dt.predict(attrs, [z]))
-    print(dt.tree)
-
-
-    print(len(x))
-
-    """
-
-    print(boardState())
+    #print(boardState())
 
     """
     rules = []
