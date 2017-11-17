@@ -57,7 +57,8 @@ def create_datum(card, truth):
     Input: The last card played
     Output: A datum for the training set, based on the previous 2 cards
 
-    Requires that 2 legal cards have been played
+    Requires that 2 legal cards have been played. 
+    Assumes that card has been played.
     """
     global ATTRIBUTES
 
@@ -76,13 +77,8 @@ def create_datum(card, truth):
     individuals = [suit, color, even, is_royal]
     individuals_att = ["suit", "color", "even", "is_royal"]
 
-    features = []
-    ATTRIBUTES = []
-
-    features += [x(y) for y in cards for x in individuals]
-    ATTRIBUTES += [x + "(" + str(y) + ")" for y in cards_att for x in individuals_att]
-    #print(ATTRIBUTES)
-    #print(features)
+    features = [x(y) for y in cards for x in individuals]
+    ATTRIBUTES = [x + "(" + str(y) + ")" for y in cards_att for x in individuals_att]
 
 
     # unfortunately we need features for comparing values (for each card) 
@@ -95,8 +91,6 @@ def create_datum(card, truth):
     features += ([x(card, y) for y in [prev2, prev] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]])
     ATTRIBUTES += ([x + "(current" + "," + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]] + [x + "(previous, previous2)" for x in ["greater", "equal"]])
 
-    #print(equal(card, prev), card, prev, prev2)
-
     #TODO: add anything else here that could possibly be a predicate that we split on
     features += ([x(card[:-1], y[:-1]) for y in [prev2, prev] for x in [greater, equal]] + [x(prev[:-1], prev2[:-1]) for x in [greater, equal]])
     ATTRIBUTES += ([x + "(value(current)" + ",value(" + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]] + [x + "(value(previous), value(previous2))" for x in ["greater", "equal"]])
@@ -104,9 +98,7 @@ def create_datum(card, truth):
     # include the classification
     features.append(truth)
     ATTRIBUTES.append("Legal")
-    print(len(ATTRIBUTES))
 
-    #print(card, features, len(features))
     return tuple(features)
 
 def scientist():
@@ -126,20 +118,17 @@ def scientist():
 
     dt = DecisionTree()
 
-    while(cards_played < 200):
+    while(cards_played < 300):
         cards_played += 1
 
         # somehow choose a card
         card = pick_card()
 
-        print("CARD", card)
+        #print("CARD", card)
 
         # our guess vs. actual truth
         truth = play(card)
         datum = create_datum(card, truth)
-
-        #This should be a fixed constant
-        #attrs = [str(i) for i in range(len(datum))]
 
         if(cards_played > 1):
             guess = dt.predict(ATTRIBUTES, [datum])[0]
@@ -152,7 +141,6 @@ def scientist():
 
         # TODO: Add the card (and its precessors to the training data set)
         training_data.append(datum)
-        cards.append(card)
 
         # if we are incorrect
         if(guess != truth or cards_played == 1):
@@ -171,7 +159,7 @@ def scientist():
             return dt, training_data
 
     print(cards_played)
-    return dt, training_data, cards
+    return dt, training_data
 
 def score():
     """
@@ -287,7 +275,7 @@ def main():
     BOARD.append(("9D", []))
     BOARD.append(("8H", []))
 
-    dt, training_data, cards = scientist()
+    dt, training_data = scientist()
 
     print(boardState())
 
