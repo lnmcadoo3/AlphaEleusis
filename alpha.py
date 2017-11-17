@@ -21,6 +21,8 @@ HYPOTHESIS = None
 HAND = []
 ATTRIBUTES = []
 
+VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+
 def pick_card():
     """
     Helper function that picks a card from the HAND, for Phase I, the hand
@@ -49,7 +51,7 @@ def deal_hand():
     """
     # TODO: Phase II
     for suit in ["C", "D", "H", "S"]:
-        for value in ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]:
+        for value in VALUES:
             HAND.append(value + suit)
 
 def create_datum(card, truth):
@@ -70,43 +72,27 @@ def create_datum(card, truth):
         prev2 = b[-2][0]
 
     cards = [prev2, prev, card]
-    cards_att = ["previous2", "previous", "current"]
 
     # we need suit, parity, color...
     individuals = [suit, color, even, is_royal]
-    individuals_att = ["suit", "color", "even", "is_royal"]
 
-    features = []
-    ATTRIBUTES = []
-
-    features += [x(y) for y in cards for x in individuals]
-    ATTRIBUTES += [x + "(" + str(y) + ")" for y in cards_att for x in individuals_att]
-    #print(ATTRIBUTES)
-    #print(features)
-
+    features = [x(y) for y in cards for x in individuals]
 
     # unfortunately we need features for comparing values (for each card) 
     #   to the numbers 1 to 13, to encompass numerical differences
     # this makes the feature list gigantic
-    features += [x(str(y[:-1]), str(z)) for y in cards for z in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] for x in [greater, equal]]
-    ATTRIBUTES += [x + "(value(" + y + ")," + z + ")" for y in cards_att for z in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] for x in ["greater", "equal"]]
+    features += [x(str(y[:-1]), str(z)) for y in cards for z in VALUES for x in [greater, equal]]
 
     # compare the deck values of the cards to each other
-    features += ([x(card, y) for y in [prev2, prev] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]])
-    ATTRIBUTES += ([x + "(current" + "," + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]] + [x + "(previous, previous2)" for x in ["greater", "equal"]])
-
-    #print(equal(card, prev), card, prev, prev2)
+    features += [x(card, y) for y in [prev2, prev] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]]
 
     #TODO: add anything else here that could possibly be a predicate that we split on
-    features += ([x(card[:-1], y[:-1]) for y in [prev2, prev] for x in [greater, equal]] + [x(prev[:-1], prev2[:-1]) for x in [greater, equal]])
-    ATTRIBUTES += ([x + "(value(current)" + ",value(" + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]] + [x + "(value(previous), value(previous2))" for x in ["greater", "equal"]])
+    features += [x(card[:-1], y[:-1]) for y in [prev2, prev] for x in [greater, equal]] 
+    features += [x(prev[:-1], prev2[:-1]) for x in [greater, equal]]
 
     # include the classification
     features.append(truth)
-    ATTRIBUTES.append("Legal")
-    print(len(ATTRIBUTES))
 
-    #print(card, features, len(features))
     return tuple(features)
 
 def scientist():
@@ -123,6 +109,20 @@ def scientist():
     # this should be the running list of training data (so that we don't have to recompute)
     training_data = []
     cards = []
+
+    # create the attributes list
+    cards_att = ["previous2", "previous", "current"]
+    individuals_att = ["suit", "color", "even", "is_royal"]
+
+    ATTRIBUTES = [x + "(" + str(y) + ")" for y in cards_att for x in individuals_att]
+    ATTRIBUTES += [x + "(value(" + y + ")," + z + ")" for y in cards_att for z in VALUES for x in ["greater", "equal"]]
+    ATTRIBUTES += [x + "(current" + "," + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]]
+    ATTRIBUTES += [x + "(previous, previous2)" for x in ["greater", "equal"]]
+    ATTRIBUTES += [x + "(value(current)" + ",value(" + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]]
+    ATTRIBUTES += [x + "(value(previous), value(previous2))" for x in ["greater", "equal"]]
+    ATTRIBUTES.append("Legal")
+
+    print(len(ATTRIBUTES))
 
     dt = DecisionTree()
 
@@ -171,7 +171,7 @@ def scientist():
             return dt, training_data
 
     print("CARDS PLAYED:", cards_played)
-    return dt, training_data, cards
+    return dt, training_data
 
 def score():
     """
@@ -284,7 +284,7 @@ def main():
     BOARD.append(("9D", []))
     BOARD.append(("8H", []))
 
-    dt, training_data, cards = scientist()
+    dt, training_data = scientist()
 
     print(boardState())
 
