@@ -168,10 +168,11 @@ def scientist():
         if(cards_played > 20 and guesses_correct > 20):
             dt.print_tree()
             print(cards_played)
-            return dt, training_data
+            return dt.get_rule()
 
     print("CARDS PLAYED:", cards_played)
-    return dt, training_data
+    
+    return dt.get_rule()
 
 def score():
     """
@@ -263,15 +264,15 @@ def main():
     print("Starting a new game of New Eleusis!")
     
     print("God is choosing a rule...")
-    set_rule("equal(color(previous), color(current))")
+    #set_rule("equal(color(previous), color(current))")
     
-    '''
+    
     set_rule("""and(
                         not(and(equal(color(previous), color(previous2)),
                                 equal(color(previous), color(current))) ),
                         not(and(equal(value(previous), value(previous2)),
                                 equal(value(previous), value(current))) ) )""")
-    '''
+    
     
     print("God chose the rule:")
     print(RULE)
@@ -284,10 +285,13 @@ def main():
     BOARD.append(("9D", []))
     BOARD.append(("8H", []))
 
-    dt, training_data = scientist()
+    rule = scientist()
 
     print(boardState())
 
+    print("SCIENTIST'S GUESS:")
+    print(rule)
+    
     # check to make sure the rule fits
     '''
     for t in training_data:

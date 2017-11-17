@@ -192,6 +192,36 @@ class DecisionTree():
 
         return dicts
 
+    def get_rule(self):
+        '''
+        Returns a rule built from the decision tree
+        '''
+        paths = self.process_paths()
+        rule = ""
+        
+        if len(paths) > 1:
+            rule += "and("
+        
+        for path in paths:
+            if len(path.items()) > 1:
+                rule += "or("
+                
+            for logic, value in path.items():
+                rule += "equal(" + logic + ", " + str(value) + "), "
+            
+            # take off last ', ' and close parens
+            rule = rule[:-2]
+            if len(path.items()) > 1:
+                rule += ")"
+                
+            rule += ", "
+        
+        # remove trailing ', ' and close parens
+        rule = rule[:-2]
+        if len(paths) > 1:
+            rule += ")"
+            
+        return rule
 
     def predict(self, attributes, X_test):
         predictions = []
