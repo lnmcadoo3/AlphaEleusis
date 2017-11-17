@@ -86,14 +86,6 @@ def create_datum(card, truth):
     #print(card, features, len(features))
     return tuple(features)
 
-def retrain(training_data):
-    """
-    Input: Training data
-    Output: A decision tree representing our agent's hypothesis
-    """
-    return None
-
-
 def scientist():
     """
     Input: None

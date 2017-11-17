@@ -32,10 +32,11 @@ def majorClass(attributes, data, target):
 
 #Calculates Shannon Entropy for data given a target attribute
 def entropy(attributes, data, targetAttr):
+    entropy = 0
+    #frequency = {}
+    #E = 0.0
 
-    frequency = {}
-    E = 0.0
-
+    # There should be a 1 line pythonic way to do this
     i = 0
     for entry in attributes:
         if (targetAttr == entry):
@@ -43,16 +44,24 @@ def entropy(attributes, data, targetAttr):
         i = i + 1
 
     #i = i - 1
-    for entry in data:
-        if (entry[i] in frequency):
-            frequency[entry[i]] += 1.0
-        else:
-            frequency[entry[i]]  = 1.0
+    #for entry in data:
+    #    if entry[i] in frequency:
+    #        frequency[entry[i]] += 1.0
+    #    else:
+    #        frequency[entry[i]]  = 1.0
 
-    for freq in frequency.values():
-        E += (-freq/len(data)) * math.log(freq/len(data), 2) 
+    # Source: http://pythonfiddle.com/shannon-entropy-calculation/
+    for x in data:
+        p_x = float(data.count(chr(x[i])) / len(data))
+        if p_x > 0:
+            entropy += -p_x * math.log(p_x, 2)
+
+    return entropy
+
+    #for freq in frequency.values():
+    #    E += (-freq/len(data)) * math.log(freq/len(data), 2) 
   
-    return E
+    #return E
 
 #Calculates information gain when a particular attribute is chosen for splitting
 def information_gain(attributes, data, attr, targetAttr):
@@ -77,7 +86,8 @@ def information_gain(attributes, data, attr, targetAttr):
 # Chooses the attribute based on information gain
 def choose_best_attribute(data, attributes, target):
     best_attr = attributes[0]
-    maxGain = 0;
+    maxGain = 0
+    
     for attr in attributes:
         # don't use the target as an attribute to split on
         if(attr != target):
@@ -85,6 +95,7 @@ def choose_best_attribute(data, attributes, target):
             if newGain > maxGain:
                 maxGain = newGain
                 best_attr = attr
+                
     return best_attr
 
 # Gets unique values for a particular attribute 
@@ -112,10 +123,11 @@ def get_data(data, attributes, best, Value):
                     newEntry.append(entry[i])
             new_data.append(newEntry)
 
-    new_data.remove([])    
+    new_data.remove([])
+    
     return new_data
 
-def recursive_build(data,target,attributes):
+def recursive_build(data, target, attributes):
     data = data[:]
     vals = [record[attributes.index(target)] for record in data]
     default = majorClass(attributes, data, target)
@@ -137,24 +149,27 @@ def recursive_build(data,target,attributes):
     
     return tree
 
-
 class DecisionTree():
 
-    def build_tree(self,X_train,y_train,attributes):
-        self.tree  = recursive_build(X_train,y_train,attributes)
+    def build_tree(self, X_train, y_train, attributes):
+        self.tree = recursive_build(X_train, y_train, attributes)
 
-    def predict(self,attributes,X_test):
+    def predict(self, attributes, X_test):
         predictions = []
         res = ""
+        
         if(isinstance(self.tree, bool)):
             return [self.tree]
+        
         for entry in X_test:
             temp_dict = self.tree.copy()
+            
         while(isinstance(temp_dict, dict)):
             root = Node(list(temp_dict.keys())[0], temp_dict[list(temp_dict.keys())[0]])
             temp_dict = temp_dict[list(temp_dict.keys())[0]]
             index = attributes.index(root.value)
             value = entry[index]
+            
             if(value in temp_dict.keys()):
                 child = Node(value, temp_dict[value])
                 res = temp_dict[value]
@@ -162,7 +177,9 @@ class DecisionTree():
             else:
                 res = "Null"
                 break
+        
         predictions.append(res)
+        
         return predictions
 
 if __name__ == "__main__":
