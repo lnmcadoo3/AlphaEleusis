@@ -165,7 +165,7 @@ def scientist():
             guesses_correct += 1
 
         # quitting criterion (subject to change)
-        if(cards_played > 20 and guesses_correct > 50):
+        if(cards_played > 20 and guesses_correct > 20):
             dt.print_tree()
             print(cards_played)
             return dt, training_data
