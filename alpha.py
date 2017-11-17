@@ -263,14 +263,14 @@ def main():
     print("Starting a new game of New Eleusis!")
     
     print("God is choosing a rule...")
-    #set_rule("equal(color(previous), color(current))")
+    set_rule("equal(color(previous), color(current))")
     
     
-    set_rule("""and(
-                        not(and(equal(color(previous), color(previous2)),
-                                equal(color(previous), color(current))) ),
-                        not(and(equal(value(previous), value(previous2)),
-                                equal(value(previous), value(current))) ) )""")
+    #set_rule("""and(
+    #                    not(and(equal(color(previous), color(previous2)),
+    #                            equal(color(previous), color(current))) ),
+    #                    not(and(equal(value(previous), value(previous2)),
+    #                            equal(value(previous), value(current))) ) )""")
     
     
     print("God chose the rule:")
