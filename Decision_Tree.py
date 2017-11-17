@@ -154,6 +154,45 @@ class DecisionTree():
     def build_tree(self, X_train, y_train, attributes):
         self.tree = recursive_build(X_train, y_train, attributes)
 
+    #Finds all combinations of variables that lead to target_val in the tree 
+    def find_paths(self, t = None, target_val = True):
+        if(t == None):
+            t = self.tree
+        if(not isinstance(t, dict)):
+            if(t == target_val):
+                return [target_val]
+            else:
+                return []
+
+        att = list(t.keys())[0]
+
+        paths = []
+
+        for val in t[att].keys():
+            temp_paths = self.find_paths(t[att][val], target_val)
+            if(temp_paths):
+                paths += [[(att, val)] + temp_paths]      
+
+        return paths
+
+    #Return the paths from find_paths() in a useful format
+    def process_paths(self, target_val = True):
+        paths = self.find_paths(target_val = target_val)
+        #print(paths)
+
+        dicts = []
+
+        for p in paths:
+            temp_dict = {}
+            x = p[:]
+            while(isinstance(x, list) and x != []):
+                temp_dict[x[0][0]] = x[0][1]
+                x = x[1]
+            dicts.append(temp_dict)
+
+        return dicts
+
+
     def predict(self, attributes, X_test):
         predictions = []
         
@@ -226,4 +265,6 @@ if __name__ == "__main__":
     print(predictions)
     print(tree.tree)
     tree.print_tree()
+
+    print(tree.process_paths('1'))
 
