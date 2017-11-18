@@ -200,11 +200,11 @@ class DecisionTree():
         rule = ""
         
         if len(paths) > 1:
-            rule += "and("
+            rule += "or("
         
         for path in paths:
             if len(path.items()) > 1:
-                rule += "or("
+                rule += "and("
                 
             for logic, value in path.items():
                 rule += "equal(" + logic + ", " + str(value) + "), "
