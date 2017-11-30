@@ -20,6 +20,7 @@ RULE = None
 HYPOTHESIS = None
 HAND = []
 ATTRIBUTES = []
+DECK = []
 
 VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
@@ -173,6 +174,22 @@ def scientist():
     print("CARDS PLAYED:", cards_played)
     
     return dt.get_rule()
+
+def are_rules_equivalent():
+    '''
+    Exhaustivly checks if the rules are equivalent
+    
+    I'm not convinced this is logically sound since there are combinations
+    of prev2 and prev that could be illegal to begin with under God's rule
+    and so shouldn't be counted towards equivalence
+    '''
+    for prev2 in DECK:
+        for prev in DECK:
+            for curr in DECK:
+                # should check for vacuous equivalence
+                if RULE.evaluate((prev2, prev, curr)) != HYPOTHESIS.evaluate((prev2, prev, curr)):
+                    return False
+    return True
 
 def score():
     """
