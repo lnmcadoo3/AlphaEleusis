@@ -17,163 +17,179 @@ import random
 #   both legal and illegal, that have been played
 BOARD = []
 RULE = None
-HYPOTHESIS = None
 HAND = []
 ATTRIBUTES = []
 DECK = []
 
 VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+SUITS = ["C", "D", "H", "S"]
 
-def pick_card():
+class Player(object):
+
+    def __init__(self, cards):
+        """
+        Pretty self explanatory constructor
+        """
+
+        #These variables replace the global variables in Phase I
+        self.BOARD = []   
+        self.VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+        self.SUITS = ["C", "D", "H", "S"]
+
+
+        #Helper variables for ATTRIBUTES
+        cards_att = ["previous2", "previous", "current"]
+        individuals_att = ["suit", "color", "even", "is_royal"]
+        self.ATTRIBUTES = [x + "(" + str(y) + ")" for y in cards_att for x in individuals_att]
+        self.ATTRIBUTES += [x + "(value(" + y + ")," + z + ")" for y in cards_att for z in self.VALUES for x in ["greater", "equal"]]
+        self.ATTRIBUTES += [x + "(current" + "," + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]]
+        self.ATTRIBUTES += [x + "(previous, previous2)" for x in ["greater", "equal"]]
+        self.ATTRIBUTES += [x + "(value(current)" + ",value(" + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]]
+        self.ATTRIBUTES += [x + "(value(previous), value(previous2))" for x in ["greater", "equal"]]
+        self.ATTRIBUTES += ["Legal"]
+
+        #To keep track of running score
+        self.score = 0
+
+        #This is for our rule
+        self.hypothesis = DecisionTree()
+        self.training_data = []
+
+        #A boolean that will tell us if we need to update the tree
+        self.rebuildTree = True
+
+        #These are for our quitting criteria
+        self.cards_played = 0
+        self.total_cards = 0
+        self.guesses_correct = 0
+
+        #Setup the initial boardstate
+        for c in cards:
+            self.update_card_to_board_state(c, True)
+
+        #Setup our hand
+        self.hand = [self.generate_random_card() for i in range(14)]
+
+
     """
     Helper function that picks a card from the HAND, for Phase I, the hand
     includes all possible cards
     
     TODO: Phase II gamification
     """
-    for card in HAND:
-        # if card is illegal under the hypothesis, play it
-        if HYPOTHESIS and not HYPOTHESIS.evaluate(card):
-            # TODO: phase II should remove the card from the hand
-            return card
-        
-    return pick_card_at_random()
+    def pick_card(self):
+        return random.choice(self.hand)
 
-def pick_card_at_random():
     """
-    Helper function that returns a random card from the hand
+    Returns random card in the deck
     """
-    # TODO: Phase II should remove the played card from the hand
-    return random.choice(HAND)
+    def generate_random_card(self):
+        return random.choice(self.VALUES) + random.choice(self.SUITS)
 
-def create_deck():
     """
-    Puts every card into the deck
+    Takes in a card and whether or not it was legal, updating the board state
+
+    We will also update our training data here, and decide whether or not we need to rebuild the
+        decision tree
+
+    TODO: find a way to update our score if we played the card?
     """
-    for suit in ["C", "D", "H", "S"]:
-        for value in VALUES:
-            DECK.append(value + suit)
+    def update_card_to_board_state(self, card, result):
 
-def create_datum(card, truth):
-    """
-    Input: The last card played
-    Output: A datum for the training set, based on the previous 2 cards
+        #Construct an element of the training data
+        datum = self.create_datum(card)
+        datum.append(result)
+        datum = tuple(datum)
 
-    Requires that 2 legal cards have been played
-    """
-    global ATTRIBUTES
+        self.training_data.append(datum)
 
-    b = boardState()
-    if(truth):
-        prev = b[-2][0]
-        prev2 = b[-3][0]
-    else:
-        prev = b[-1][0]
-        prev2 = b[-2][0]
+        #Figure out what our rule says about this card
+        guess = self.guess_legal(datum)
 
-    cards = [prev2, prev, card]
+        #If we were wrong, we need to rebuild the tree
+        if(guess != result):
+            self.rebuildTree = True
+            self.guesses_correct = 0
+        #We were correct, and our tree is not proven wrong
+        elif(guess == result and not self.rebuildTree):
+            self.guesses_correct += 1
 
-    # we need suit, parity, color...
-    individuals = [suit, color, even, is_royal]
-
-    features = [x(y) for y in cards for x in individuals]
-
-    # unfortunately we need features for comparing values (for each card) 
-    #   to the numbers 1 to 13, to encompass numerical differences
-    # this makes the feature list gigantic
-    features += [x(str(y[:-1]), str(z)) for y in cards for z in VALUES for x in [greater, equal]]
-
-    # compare the deck values of the cards to each other
-    features += [x(card, y) for y in [prev2, prev] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]]
-
-    #TODO: add anything else here that could possibly be a predicate that we split on
-    features += [x(card[:-1], y[:-1]) for y in [prev2, prev] for x in [greater, equal]] 
-    features += [x(prev[:-1], prev2[:-1]) for x in [greater, equal]]
-
-    # include the classification
-    features.append(truth)
-
-    return tuple(features)
-
-def scientist(cards, game_ended):
-    """
-    Input: None
-    Output: Returns the <rule-expression> the player has found
-    
-    Also updates the board state
-    Requires that 2 legal cards have been played
-    """
-    HAND = cards
-    cards_played = 0
-    guesses_correct = 0
-
-    # this should be the running list of training data (so that we don't have to recompute)
-    training_data = []
-    cards = []
-
-    # create the attributes list
-    cards_att = ["previous2", "previous", "current"]
-    individuals_att = ["suit", "color", "even", "is_royal"]
-
-    ATTRIBUTES = [x + "(" + str(y) + ")" for y in cards_att for x in individuals_att]
-    ATTRIBUTES += [x + "(value(" + y + ")," + z + ")" for y in cards_att for z in VALUES for x in ["greater", "equal"]]
-    ATTRIBUTES += [x + "(current" + "," + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]]
-    ATTRIBUTES += [x + "(previous, previous2)" for x in ["greater", "equal"]]
-    ATTRIBUTES += [x + "(value(current)" + ",value(" + y + ")" for y in cards_att[:-1] for x in ["greater", "equal"]]
-    ATTRIBUTES += [x + "(value(previous), value(previous2))" for x in ["greater", "equal"]]
-    ATTRIBUTES.append("Legal")
-
-    print(len(ATTRIBUTES))
-
-    dt = DecisionTree()
-
-    while(cards_played < 200):
-        cards_played += 1
-
-        # somehow choose a card
-        card = pick_card()
-        print("\nCARD", card)
-
-        # our guess vs. actual truth
-        truth = play(card)
-        datum = create_datum(card, truth)
-
-        #This should be a fixed constant
-        #attrs = [str(i) for i in range(len(datum))]
-
-        if cards_played > 1:
-            guess = dt.predict(ATTRIBUTES, [datum])[0]
-            if guess == "Null":
-                guess = False
+        #Now we can update the board state
+        if(result):
+            self.BOARD.append((card, []))
         else:
+            self.BOARD[-1][1].append(card)
+
+        #Increase the total number of cards that we've seen
+        self.total_cards += 1
+
+    """
+    This takes in a card and returns the datum (without the classification, which will be added later)
+
+    This assumes that card has *NOT* been added to the BOARD, i.e. we have not "played" card yet
+    """
+    def create_datum(self, card):
+        prev2 = BOARD[-2][0]
+        prev = BOARD[-1][0]
+
+        cards = [prev2, prev, card]
+
+        # we need suit, parity, color...
+        individuals = [suit, color, even, is_royal]
+
+        features = [x(y) for y in cards for x in individuals]
+
+        # unfortunately we need features for comparing values (for each card) 
+        #   to the numbers 1 to 13, to encompass numerical differences
+        # this makes the feature list gigantic
+        features += [x(str(y[:-1]), str(z)) for y in cards for z in self.VALUES for x in [greater, equal]]
+
+        # compare the deck values of the cards to each other
+        features += [x(card, y) for y in [prev2, prev] for x in [greater, equal]] + [x(prev, prev2) for x in [greater, equal]]
+
+        #TODO: add anything else here that could possibly be a predicate that we split on
+        features += [x(card[:-1], y[:-1]) for y in [prev2, prev] for x in [greater, equal]] 
+        features += [x(prev[:-1], prev2[:-1]) for x in [greater, equal]]
+
+        return features
+
+    """
+    Takes in a datum (create_datum(card)) and returns our hypothesis about whether the card is legal or not
+
+    TODO: Verify that this works
+    """
+    def guess_legal(self, datum):
+
+        guess = self.hypothesis.predict(self.ATTRIBUTES, [datum])[0]
+
+        if(guess == "Null"):
             guess = False
+        return guess
 
-        print("GUESS:", guess)
-        print("TRUTH:", truth)
 
-        # TODO: Add the card (and its precessors to the training data set)
-        training_data.append(datum)
-        cards.append(card)
+    """
+    The core of the Player
 
-        # if we are incorrect
-        if guess != truth or cards_played == 1:
-            print("RE-BUILDING TREE")
-            dt.build_tree(training_data, ATTRIBUTES[-1], ATTRIBUTES)
-            #dt.print_tree()
-            guesses_correct = 0
-        # if we guessed right
+    TODO: Update quitting criterion
+    """
+    def scientist(self, game_ended):
+        #quitting criteria
+        quitting = (self.total_cards > 20) and (self.guesses_correct > 20)
+
+        if(game_ended or quitting):
+            return self.hypothesis.get_rule()
         else:
-            guesses_correct += 1
+            #if we need to rebuild the tree, rebuild it
+            if(len(self.training_data) > 0 and self.rebuildTree):
+                #rebuild the tree
+                self.hypothesis.build_tree(self.training_data, self.ATTRIBUTES[-1], self.ATTRIBUTES)
 
-        # quitting criterion (subject to change)
-        if(cards_played > 20 and guesses_correct > 20):
-            dt.print_tree()
-            print(cards_played)
-            return dt.get_rule()
+            #pick a card
+            card = self.pick_card()
 
-    print("CARDS PLAYED:", cards_played)
-    
-    return dt.get_rule()
+            #play the card
+            self.cards_played += 1
+
 
 def are_rules_equivalent():
     '''
