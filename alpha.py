@@ -95,7 +95,7 @@ def create_datum(card, truth):
 
     return tuple(features)
 
-def scientist():
+def scientist(cards, game_ended):
     """
     Input: None
     Output: Returns the <rule-expression> the player has found
@@ -103,6 +103,7 @@ def scientist():
     Also updates the board state
     Requires that 2 legal cards have been played
     """
+    HAND = cards
     cards_played = 0
     guesses_correct = 0
 
@@ -297,18 +298,16 @@ def main():
     
     create_deck()
     print("Players hand is:")
-    # TODO: get HAND
-    print(HAND)
     
     BOARD.append(("9D", []))
     BOARD.append(("8H", []))
 
-    rule = scientist()
+    #rule = scientist()
 
     print(boardState())
 
     print("SCIENTIST'S GUESS:")
-    print(rule)
+    #print(rule)
     
     
 if __name__ == "__main__":
