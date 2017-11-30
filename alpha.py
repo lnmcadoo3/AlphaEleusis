@@ -46,14 +46,13 @@ def pick_card_at_random():
     # TODO: Phase II should remove the played card from the hand
     return random.choice(HAND)
 
-def deal_hand():
+def create_deck():
     """
-    Deals a hand to the player, if this is phase one, this is every possible card
+    Puts every card into the deck
     """
-    # TODO: Phase II
     for suit in ["C", "D", "H", "S"]:
         for value in VALUES:
-            HAND.append(value + suit)
+            DECK.append(value + suit)
 
 def create_datum(card, truth):
     """
@@ -216,6 +215,8 @@ def score():
     score = len([x for x in legal_plays.keys() if x >= 20]) + 2*len([y for y in illegal_plays.keys() if y >= 20])
 
     #Score the rule etc.
+    score -= 75 if are_rules_equivalent() else 0
+    #score -= 25 if we_ended_the_game else 0
 
     return score
 
@@ -294,9 +295,9 @@ def main():
     print("God chose the rule:")
     print(RULE)
     
-    print("Dealing the player a hand...")
-    deal_hand()
+    create_deck()
     print("Players hand is:")
+    # TODO: get HAND
     print(HAND)
     
     BOARD.append(("9D", []))
