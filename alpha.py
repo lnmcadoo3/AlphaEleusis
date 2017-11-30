@@ -264,10 +264,7 @@ def main():
     print("Starting a new game of New Eleusis!")
     
     print("God is choosing a rule...")
-<<<<<<< HEAD
     set_rule("equal(color(previous), color(current))")
-=======
->>>>>>> branch 'master' of https://github.com/lnmcadoo3/AlphaEleusis.git
     
     '''
     set_rule("""and(
