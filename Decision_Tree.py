@@ -96,7 +96,7 @@ def choose_best_attribute(data, attributes, target):
     return best_attr
 
 # Gets unique values for a particular attribute 
-def get_values(data, attributes, attr):
+def get_value(data, attributes, attr):
 
     index = attributes.index(attr)
     values_new = list(set([entry[index] for entry in data]))
@@ -107,7 +107,6 @@ def get_values(data, attributes, attr):
         if entry[index] not in values:
             values.append(entry[index])
     
-    #print(sorted(values))
 
     if(sorted(values) != sorted(values_new)):
         print("Broken values")
@@ -116,8 +115,8 @@ def get_values(data, attributes, attr):
 
     return values
 
-#Gets all rows of data where "best" attribute has a value "Value"
-def get_data(data, attributes, best, Value):
+#selects all rows of data where "best" attribute has a value "Value"
+def select_data(data, attributes, best, Value):
     index = attributes.index(best)
 
     new_data = [[]]
@@ -130,18 +129,14 @@ def get_data(data, attributes, best, Value):
 def recursive_build(data, target, attributes):
     data = data[:]
     vals = [record[attributes.index(target)] for record in data]
-    #default = majorClass(attributes, data, target)
-
-    #if not data or (len(attributes) - 1) <= 0:
-    #    return default
     if vals.count(vals[0]) == len(vals):
         return vals[0]
     else:
         best = choose_best_attribute(data, attributes, target)
         tree = {best:{}}
     
-        for val in get_values(data, attributes, best):
-            new_data = get_data(data, attributes, best, val)
+        for val in get_value(data, attributes, best):
+            new_data = select_data(data, attributes, best, val)
             newAttr = attributes[:]
             newAttr.remove(best)
             subtree = recursive_build(new_data, target, newAttr)
@@ -178,7 +173,6 @@ class DecisionTree():
     #Return the paths from find_paths() in a useful format
     def process_paths(self, target_val = True):
         paths = self.find_paths(target_val = target_val)
-        #print(paths)
 
         dicts = []
 

@@ -264,7 +264,10 @@ def main():
     print("Starting a new game of New Eleusis!")
     
     print("God is choosing a rule...")
+<<<<<<< HEAD
     set_rule("equal(color(previous), color(current))")
+=======
+>>>>>>> branch 'master' of https://github.com/lnmcadoo3/AlphaEleusis.git
     
     '''
     set_rule("""and(
@@ -292,32 +295,6 @@ def main():
     print("SCIENTIST'S GUESS:")
     print(rule)
     
-    # check to make sure the rule fits
-    '''
-    for t in training_data:
-        if(t[-1] != dt.predict(ATTRIBUTES, [t])[0] or t[-1] == False and dt.predict(ATTRIBUTES, [t])[0] == "Null"):
-            print("BROKEN")
-            index = training_data.index(t)
-            print(t, cards[index-2:index+1])
-            print(index)
-            print(dt.predict(ATTRIBUTES, [t]))
-    '''
-
-    #next_card = pick_card_at_random()
-    #next_card = pick_card()
-    #print("Player is playing:")
-    #print(next_card)
     
-    #print("God says...")
-    #print("Legal") if play(next_card) else print("Illegal")
-
-    #print(boardState())
-
-    """
-    rules = []
-    rules.append(("equal(color(previous), color(current))", ("9D", "3H")))
-    for (r, legal) in rules:
-        play_game(r, legal)
-    """
-
-main()
+if __name__ == "__main__":
+    main()
