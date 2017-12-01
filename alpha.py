@@ -13,16 +13,8 @@ from new_eleusis import *
 from Decision_Tree import DecisionTree
 import random
 
-#This will hold the representation of all of the cards, 
-#   both legal and illegal, that have been played
-BOARD = []
-RULE = None
-HAND = []
-ATTRIBUTES = []
-DECK = []
+global game_ended
 
-VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
-SUITS = ["C", "D", "H", "S"]
 
 class Player(object):
 
@@ -35,6 +27,7 @@ class Player(object):
         self.BOARD = []   
         self.VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
         self.SUITS = ["C", "D", "H", "S"]
+        self.DECK = [x+y for x in self.VALUES for y in self.SUITS]
 
 
         #Helper variables for ATTRIBUTES
@@ -50,6 +43,7 @@ class Player(object):
 
         #To keep track of running score
         self.score = 0
+        self.ended_game = False
 
         #This is for our rule
         self.hypothesis = DecisionTree()
@@ -59,9 +53,10 @@ class Player(object):
         self.rebuildTree = True
 
         #These are for our quitting criteria
-        self.cards_played = 0
+        self.cards_played = []
         self.total_cards = 0
         self.guesses_correct = 0
+
 
         #Setup the initial boardstate
         for c in cards:
@@ -120,6 +115,14 @@ class Player(object):
         else:
             self.BOARD[-1][1].append(card)
 
+        #Increase our score (iff we played the card and it counts towards score)
+        if(len(self.cards_played) > 20 and self.cards_played[-1] == self.total_cards):
+            #if the card was legal
+            if(result):
+                self.score += 1
+            else:
+                self.score += 2
+
         #Increase the total number of cards that we've seen
         self.total_cards += 1
 
@@ -166,17 +169,20 @@ class Player(object):
             guess = False
         return guess
 
-
     """
-    The core of the Player
+    The core of the Player's decision making
 
     TODO: Update quitting criterion
+    TODO: If we 
     """
     def scientist(self, game_ended):
         #quitting criteria
         quitting = (self.total_cards > 20) and (self.guesses_correct > 20)
 
         if(game_ended or quitting):
+            #if we are ending the game
+            if(not game_ended):
+                self.ended_game = True
             return self.hypothesis.get_rule()
         else:
             #if we need to rebuild the tree, rebuild it
@@ -187,78 +193,49 @@ class Player(object):
             #pick a card
             card = self.pick_card()
 
+            #record what number card we played
+            self.cards_played.append(self.total_cards)
+
             #play the card
-            self.cards_played += 1
+            return card
 
-
-def are_rules_equivalent():
-    '''
-    Exhaustivly checks if the rules are equivalent
-    
-    I'm not convinced this is logically sound since there are combinations
-    of prev2 and prev that could be illegal to begin with under God's rule
-    and so shouldn't be counted towards equivalence
-    '''
-    for prev2 in DECK:
-        for prev in DECK:
-            for curr in DECK:
-                # should check for vacuous equivalence
-                if RULE.evaluate((prev2, prev, curr)) != HYPOTHESIS.evaluate((prev2, prev, curr)):
-                    return False
-    return True
-
-def score():
     """
-    Input: None
-    Output: Returns the score for the most recent round. (Low is better!)
-    Calculate by adding points as follows: +1 for every successful play over 20
-    and under 200; +2 for every failed play; + 15 for a rule that is not
-    equivalent to the correct rule; +30 for a rule that does not describe all
-    cards on the board.
+    This computes the score of the player
     """
-    board = boardState()
-    legal_plays = {}
-    illegal_plays = {}
-    card_num = 1
-    for (legal, illegals) in board:
-        if(len(illegals) != 0):
-            for illegal in illegals:
-                illegal_plays[card_num] = illegal
-                card_num += 1
-        legal_plays[card_num] = legal
-        card_num += 1
+    def score(self, rule):
+        if(self.check_equivalence(rule)):
+            self.score -= 75
+        if(self.ended_game):
+            self.score -= 25
+        return self.score
 
-    #Scoring for the legal or illegal plays
-    score = len([x for x in legal_plays.keys() if x >= 20]) + 2*len([y for y in illegal_plays.keys() if y >= 20])
-
-    #Score the rule etc.
-    score -= 75 if are_rules_equivalent() else 0
-    #score -= 25 if we_ended_the_game else 0
-
-    return score
-
-def play(card):
     """
-    Input: <card>
-    Output: True if the play was legal, False otherwise
+    This checks to see if the rule is equivalent to our hypothesis
+
+    TODO: Maybe change this for vacuous stuff?
+            -Maybe use (None, None, x) to see if the dealer could play x
+                This would require a try catch because maybe None would cause it to fail
+            -Maybe try and parse the rule to ignore prev2/prev for the first 2 cards etc?
+                Like evaluate the parts of the rule that don't use prev/prev2
+
     """
-    #Grab the 2 previous cards:
-    b = boardState()
-    previous  = None
-    previous2 = None
-    if(len(b) >= 1):
-        previous = b[-1][0]
-    if(len(b) >= 2):
-        previous2 = b[-2][0]
-    legal = RULE.evaluate((previous2, previous, card))
+    def check_equivalence(self, rule):
+        for prev2 in self.DECK:
+            for prev in self.DECK:
+                for curr in self.DECK:
+                    # should check for vacuous equivalence
+                    if rule.evaluate((prev2, prev, curr)) != self.hypothesis.evaluate((prev2, prev, curr)):
+                        return False
+        return True
 
-    #Should be the only place that BOARD is updated
-    if(legal):
-        BOARD.append((card, []))
-    else:
-        BOARD[-1][1].append(card)
+    """
+    This is mostly a wrapper for scientist
 
-    return legal
+    TODO: Make sure that this works with game_ended (being global and all)
+    """
+    def play(self):
+        return scientist(self, game_ended)
+
 
 def boardState():
     """
@@ -278,22 +255,6 @@ def set_rule(rule):
     global RULE
     RULE = parse(rule)
 
-def play_game(rule, legals):
-    """
-    Input: A rule for a game, and the first 2 plays for that rule
-    Output: The score for the scientist after playing with that rule
-    """
-    if(BOARD):
-        BOARD = None
-    if(RULE):
-        RULE = None
-
-    set_rule(rule)
-    for i in legals:
-        BOARD.append((i, []))
-
-    print(scientist())
-    print(score())
 
 def main():
     print("Starting a new game of New Eleusis!")
