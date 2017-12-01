@@ -1,4 +1,5 @@
 import math
+'''
 import pdb
 
 class Node():
@@ -8,7 +9,7 @@ class Node():
         self.value = val
         if (isinstance(dictionary, dict)):
             self.children = dictionary.keys()
-
+'''
 #Tells which class has majority in given data
 def majorClass(attributes, data, target):
     frequency = {}
@@ -121,7 +122,6 @@ def select_data(data, attributes, best, Value):
 
     new_data = [[]]
 
-    # pretty sure this works
     new_data_x = [tuple(list(entry)[:index] + list(entry)[index+1:]) for entry in data if entry[index] == Value]    
     
     return new_data_x
@@ -249,7 +249,7 @@ class DecisionTree():
                     # try and process this (maybe it is a dictionary)
                     temp_dict = temp_dict[value]
                 # in general, we don't know what to classify this
-                #   TODO: maybe for our case this should be False
+                # In case of Null, handled in alpha.py
                 else:
                     res = "Null"
                     break
