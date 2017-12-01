@@ -24,7 +24,7 @@ class Player(object):
         """
 
         #These variables replace the global variables in Phase I
-        self.BOARD = []   
+        self.BOARD = [(c, []) for c in cards] 
         self.VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
         self.SUITS = ["C", "D", "H", "S"]
         self.DECK = [x+y for x in self.VALUES for y in self.SUITS]
@@ -42,7 +42,7 @@ class Player(object):
         self.ATTRIBUTES += ["Legal"]
 
         #To keep track of running score
-        self.score = 0
+        self.game_score = 0
         self.ended_game = False
 
         #This is for our rule
@@ -56,11 +56,6 @@ class Player(object):
         self.cards_played = []
         self.total_cards = 0
         self.guesses_correct = 0
-
-
-        #Setup the initial boardstate
-        for c in cards:
-            self.update_card_to_board_state(c, True)
 
         #Setup our hand
         self.hand = [self.generate_random_card() for i in range(14)]
@@ -98,16 +93,20 @@ class Player(object):
 
         self.training_data.append(datum)
 
-        #Figure out what our rule says about this card
-        guess = self.guess_legal(datum)
+        #If we have built a tree
+        if(len(self.training_data) > 1):
+            #Figure out what our rule says about this card
+            guess = self.guess_legal(datum)
 
-        #If we were wrong, we need to rebuild the tree
-        if(guess != result):
+            #If we were wrong, we need to rebuild the tree
+            if(guess != result):
+                self.rebuildTree = True
+                self.guesses_correct = 0
+            #We were correct, and our tree is not proven wrong
+            elif(guess == result and not self.rebuildTree):
+                self.guesses_correct += 1
+        else:
             self.rebuildTree = True
-            self.guesses_correct = 0
-        #We were correct, and our tree is not proven wrong
-        elif(guess == result and not self.rebuildTree):
-            self.guesses_correct += 1
 
         #Now we can update the board state
         if(result):
@@ -119,9 +118,9 @@ class Player(object):
         if(len(self.cards_played) > 20 and self.cards_played[-1] == self.total_cards):
             #if the card was legal
             if(result):
-                self.score += 1
+                self.game_score += 1
             else:
-                self.score += 2
+                self.game_score += 2
 
         #Increase the total number of cards that we've seen
         self.total_cards += 1
@@ -132,8 +131,8 @@ class Player(object):
     This assumes that card has *NOT* been added to the BOARD, i.e. we have not "played" card yet
     """
     def create_datum(self, card):
-        prev2 = BOARD[-2][0]
-        prev = BOARD[-1][0]
+        prev2 = self.BOARD[-2][0]
+        prev = self.BOARD[-1][0]
 
         cards = [prev2, prev, card]
 
@@ -173,7 +172,6 @@ class Player(object):
     The core of the Player's decision making
 
     TODO: Update quitting criterion
-    TODO: If we 
     """
     def scientist(self, game_ended):
         #quitting criteria
@@ -190,8 +188,11 @@ class Player(object):
                 #rebuild the tree
                 self.hypothesis.build_tree(self.training_data, self.ATTRIBUTES[-1], self.ATTRIBUTES)
 
-            #pick a card
+            #pick a card and refill hand
             card = self.pick_card()
+            index = self.hand.index(card)
+            self.hand = self.hand[:index] + self.hand[index+1:] + [self.generate_random_card()]
+
 
             #record what number card we played
             self.cards_played.append(self.total_cards)
@@ -203,49 +204,56 @@ class Player(object):
     This computes the score of the player
     """
     def score(self, rule):
-        if(self.check_equivalence(rule)):
-            self.score -= 75
+        equiv = self.check_equivalence(rule)
+        if(equiv):
+            self.game_score -= 75
         if(self.ended_game):
-            self.score -= 25
-        return self.score
+            self.game_score -= 25
+        return self.game_score
 
     """
     This checks to see if the rule is equivalent to our hypothesis
+
+    This has a try catch because sometimes rule.evaluate fails (like with greater())
+    TODO: Maybe remove this?
 
     TODO: Maybe change this for vacuous stuff?
             -Maybe use (None, None, x) to see if the dealer could play x
                 This would require a try catch because maybe None would cause it to fail
             -Maybe try and parse the rule to ignore prev2/prev for the first 2 cards etc?
                 Like evaluate the parts of the rule that don't use prev/prev2
-
     """
     def check_equivalence(self, rule):
-        for prev2 in self.DECK:
-            for prev in self.DECK:
-                for curr in self.DECK:
-                    # should check for vacuous equivalence
-                    if rule.evaluate((prev2, prev, curr)) != self.hypothesis.evaluate((prev2, prev, curr)):
-                        return False
-        return True
+        try:
+            hyp = parse(self.hypothesis.get_rule())
+            for prev2 in self.DECK:
+                for prev in self.DECK:
+                    for curr in self.DECK:
+                        # should check for vacuous equivalence
+                        if rule.evaluate((prev2, prev, curr)) != hyp.evaluate((prev2, prev, curr)):
+                            return False
+            return True
+        except TypeError:
+            return False
 
     """
     This is mostly a wrapper for scientist
 
     TODO: Make sure that this works with game_ended (being global and all)
+            I think it does?
     """
     def play(self):
-        return scientist(self, game_ended)
+        return self.scientist(game_ended)
 
-
-def boardState():
     """
-    Returns a list of plays so far as a sequential list of tuples,
-    in order of play. Each tuple will contain a card played in the main
-    sequence (that is, played successfully), then a list of all cards played
-    unsuccessfully after it, which may be empty.
+    Just returns the board
     """
-    return BOARD
+    def boardState(self):
+        return self.BOARD
 
+"""
+Pretty sure we don't need this
+"""
 def set_rule(rule):
     """
     Input: <rule-expression>
@@ -257,10 +265,12 @@ def set_rule(rule):
 
 
 def main():
+    global game_ended 
+    game_ended = False
     print("Starting a new game of New Eleusis!")
     
     print("God is choosing a rule...")
-    set_rule("equal(color(previous), color(current))")
+    rule = parse("equal(color(previous), color(current))")
     
     '''
     set_rule("""and(
@@ -270,20 +280,28 @@ def main():
                                 equal(value(previous), value(current))) ) )""")
     '''
     
-    print("God chose the rule:")
-    print(RULE)
+    #print("God chose the rule:")
+    #print(RULE)
     
-    create_deck()
     print("Players hand is:")
-    
-    BOARD.append(("9D", []))
-    BOARD.append(("8H", []))
+
+    p1 = Player(["9D", "8H"])
+    #Quick test
+    for i in range(30):
+        c = p1.play()
+        if(is_card(c)):
+            result = rule.evaluate([p1.BOARD[-2][0], p1.BOARD[-1][0], c])
+            p1.update_card_to_board_state(c, result)
+    print(p1.BOARD)
+    game_ended = True
+    print(p1.play())
+    print(p1.score(rule))
 
     #rule = scientist()
 
-    print(boardState())
+    print(p1.boardState())
 
-    print("SCIENTIST'S GUESS:")
+    #print("SCIENTIST'S GUESS:")
     #print(rule)
     
     
