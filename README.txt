@@ -12,6 +12,7 @@ retrains itself on all given data in order to create the simplest hypothesis pos
 Based on the guidelines provided for the scoring function, we have modified the program to include adversaries so the game is now in a multi-player setting. When a rule is predicted, we check for the equivalency with the actual rule in an exhaustive fashion i.e run all combinations of three cards for both rules.
 
 To change God's rule, modify lines 78 and 79 in game.py to your rule and an initial 3 cards that are dealt
+We also adjusted how quickly the adversaries guess a rule
 
 # Set a rule for testing
 rule = "equal(color(previous), color(current))"
@@ -23,3 +24,8 @@ We need game_ended to be passed in as true at the end, otherwise our code will n
 
 Usage:
 	python3   game.py
+
+In general, use:
+    from alpha import Player
+
+    score(rule) is a function of Player, where rule is the string representation of the rule

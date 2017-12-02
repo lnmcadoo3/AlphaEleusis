@@ -193,7 +193,6 @@ class Player(object):
             if(self.hypothesis == None):
                 self.hypothesis = DecisionTree()
                 self.hypothesis.build_tree(self.training_data, self.ATTRIBUTES[-1], self.ATTRIBUTES)
-
             return self.hypothesis.get_rule()
         else:
             #if we need to rebuild the tree, rebuild it
@@ -242,7 +241,7 @@ class Player(object):
     def check_equivalence(self, rule):
         try:
             hyp = parse(self.hypothesis.get_rule())
-            print(self.hypothesis.get_rule())
+            #print(self.hypothesis.get_rule())
             for prev2 in self.DECK:
                 for prev in self.DECK:
                     for curr in self.DECK:

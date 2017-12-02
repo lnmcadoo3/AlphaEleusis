@@ -1,6 +1,6 @@
 # Put your program name in place of program_name
 
-from alpha import *
+from alpha import Player
 from random import randint
 from new_eleusis import *
 
@@ -156,7 +156,8 @@ for round_num in range(25):
 
 # Everyone has to guess a rule
 print(player.boardState())
-rule_player = player.play(game_ended)
+rule_player = player.play(True)
+print(rule_player)
 
 # Check if the guessed rule is correct and print the score
 print(player.score(rule))
