@@ -70,7 +70,7 @@ class Player(object):
         else:
             hyp = parse(self.hypothesis.get_rule())
             for card in self.hand:
-                if hyp.evaluate((prev2, prev, card)):
+                if not hyp.evaluate((prev2, prev, card)):
                     to_play = self.hand.pop(self.hand.index(card))
                     break
             else:
