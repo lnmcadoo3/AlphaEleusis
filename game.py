@@ -51,9 +51,9 @@ class Adversary(object):
         'cards' is a list of three valid cards to be given by the dealer at the beginning of the game.
         Your scientist should play a card out of its given hand.
         """
-        # Return a rule with a probability of 1/14
-        prob_list = [i for i in range(14)]
-        prob = prob_list[randint(0, 13)]
+        # Return a rule with a probability of 1/75 (updated from 14)
+        prob_list = [i for i in range(75)]
+        prob = prob_list[randint(0, 74)]
         if prob == 4:
             # Generate a random rule
             rule = ""
@@ -95,7 +95,7 @@ In each round scientist is called and you need to return a card or rule.
 The cards passed to scientist are the last 3 cards played.
 Use these to update your board state.
 """
-for round_num in range(14):
+for round_num in range(25):
     # Each player plays a card or guesses a rule
     try:
         # Player 1 plays
