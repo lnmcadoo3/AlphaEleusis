@@ -75,8 +75,8 @@ class Adversary(object):
 
 
 # Set a rule for testing
-rule = "if(is_royal(current), False, True)"
-cards = ["10H", "2C", "4S"]
+rule = "equal(color(previous), color(current))"
+cards = ["10H", "2D", "4H"]
 tree = parse(rule)
 
 
@@ -150,8 +150,7 @@ for round_num in range(14):
         else:
             raise Exception('')
 
-    except Exception as inst:
-        print(inst)
+    except :
         game_ended = True
         break
 
