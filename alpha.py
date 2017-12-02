@@ -128,13 +128,11 @@ class Player(object):
         #Increase our score (iff we played the card and it counts towards score)
 
 
-        if(len(self.cards_played) > 20 and self.cards_played[-1] == self.total_cards):
+        if(self.total_cards > 20 and self.cards_played[-1] == self.total_cards):
             #if the card was legal
             if(result):
-                print("GS1")
                 self.game_score += 1
             else:
-                print("GS2")
                 self.game_score += 2
 
         #Increase the total number of cards that we've seen
@@ -222,8 +220,6 @@ class Player(object):
     This computes the score of the player
     """
     def score(self, rule):
-        print(self.game_score)
-        print(len(self.cards_played))
         equiv = self.check_equivalence(rule)
         if(equiv):
             self.game_score -= 75
