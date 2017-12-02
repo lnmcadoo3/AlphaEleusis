@@ -242,7 +242,7 @@ class Player(object):
     def check_equivalence(self, rule):
         try:
             hyp = parse(self.hypothesis.get_rule())
-            #print(self.hypothesis.get_rule())
+            print(self.hypothesis.get_rule())
             for prev2 in self.DECK:
                 for prev in self.DECK:
                     for curr in self.DECK:

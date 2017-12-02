@@ -173,12 +173,20 @@ class DecisionTree():
     #Return the paths from find_paths() in a useful format
     def process_paths(self, target_val = True):
         paths = self.find_paths(target_val = target_val)
+        #print("PATHS", paths)
 
         dicts = []
 
+        if(paths == []):
+            return [{False: True}]
+        elif(paths == [True]):
+            return [{True: True}]
+
         for p in paths:
             temp_dict = {}
-            x = p[:]
+            x = p
+            if(isinstance(p, list)):
+                x = p[:]
             while(isinstance(x, list) and x != []):
                 temp_dict[x[0][0]] = x[0][1]
                 x = x[1]
@@ -201,7 +209,7 @@ class DecisionTree():
                 rule += "and("
                 
             for logic, value in path.items():
-                rule += "equal(" + logic + ", " + str(value) + "), "
+                rule += "equal(" + str(logic) + ", " + str(value) + "), "
             
             # take off last ', ' and close parens
             rule = rule[:-2]
