@@ -57,14 +57,14 @@ class Player(object):
         #Setup our hand
         self.hand = [self.generate_random_card() for i in range(14)]
 
-
-    """
-    Helper function that picks a card from the HAND, for Phase I, the hand
-    includes all possible cards
-    
-    TODO: Phase II gamification
-    """
     def pick_card(self, prev2, prev):
+        """
+        Assume that our hypothesis is correct, and play a card that the hypothsis
+        predicts is illegal, therefore increasing our chances of getting a false play.
+        That way we gain information.
+        If all cards in our hand are predicted to be legal or if we don't have a hypothesis,
+        then play at random.
+        """
         if not self.hypothesis:
             to_play = self.hand.pop(random.randrange(len(self.hand)))
         else:
