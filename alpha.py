@@ -176,9 +176,6 @@ class Player(object):
     """
     def scientist(self, game_ended):
         #quitting criteria
-        #print("SCIENTIST")
-
-        # Decide if we are going to end the game or not
         quitting = (self.total_cards > 20) and (self.guesses_correct > 20)
 
         if(game_ended or quitting):
