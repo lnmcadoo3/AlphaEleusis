@@ -64,8 +64,18 @@ class Player(object):
     
     TODO: Phase II gamification
     """
-    def pick_card(self):
-        to_play = self.hand.pop(random.randrange(len(self.hand)))
+    def pick_card(self, prev2, prev):
+        if not self.hypothesis:
+            to_play = self.hand.pop(random.randrange(len(self.hand)))
+        else:
+            hyp = parse(self.hypothesis.get_rule())
+            for card in self.hand:
+                if hyp.evaluate((prev2, prev, card)):
+                    to_play = self.hand.pop(self.hand.index(card))
+                    break
+            else:
+                to_play = self.hand.pop(random.randrange(len(self.hand)))
+        
         self.hand.append(random.choice(self.DECK))
         
         return to_play
@@ -137,7 +147,7 @@ class Player(object):
     """
     def create_datum(self, card):
         prev2 = self.BOARD[-2][0]
-        prev = self.BOARD[-1][0]
+        prev  = self.BOARD[-1][0]
 
         cards = [prev2, prev, card]
 
@@ -197,7 +207,7 @@ class Player(object):
                 self.hypothesis.build_tree(self.training_data, self.ATTRIBUTES[-1], self.ATTRIBUTES)
 
             #pick a card and refill hand
-            card = self.pick_card()
+            card = self.pick_card(self.BOARD[-2][0], self.BOARD[-1][0])
             #index = self.hand.index(card)
             #self.hand = self.hand[:index] + self.hand[index+1:] + [self.generate_random_card()]
 
@@ -249,9 +259,6 @@ class Player(object):
 
     """
     This is mostly a wrapper for scientist
-
-    TODO: Make sure that this works with game_ended (being global and all)
-            I think it does?
     """
     def play(self, game_ended=False):
         #from game import game_ended
