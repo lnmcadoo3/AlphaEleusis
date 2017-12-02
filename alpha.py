@@ -65,7 +65,10 @@ class Player(object):
     TODO: Phase II gamification
     """
     def pick_card(self):
-        return random.choice(self.hand)
+        to_play = self.hand.pop(random.randrange(len(self.hand)))
+        self.hand.append(random.choice(self.DECK))
+        
+        return to_play
 
     """
     Returns random card in the deck
