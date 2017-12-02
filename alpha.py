@@ -176,13 +176,9 @@ class Player(object):
     """
     def scientist(self, game_ended):
         #quitting criteria
-
-<<<<<<< HEAD
         #print("SCIENTIST")
 
         # Decide if we are going to end the game or not
-=======
->>>>>>> branch 'master' of https://github.com/lnmcadoo3/AlphaEleusis.git
         quitting = (self.total_cards > 20) and (self.guesses_correct > 20)
 
         if(game_ended or quitting):
