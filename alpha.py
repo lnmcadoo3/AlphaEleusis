@@ -13,9 +13,6 @@ from new_eleusis import *
 from Decision_Tree import DecisionTree
 import random
 
-global game_ended
-
-
 class Player(object):
 
     def __init__(self, cards):
@@ -46,7 +43,7 @@ class Player(object):
         self.ended_game = False
 
         #This is for our rule
-        self.hypothesis = DecisionTree()
+        self.hypothesis = None
         self.training_data = []
 
         #A boolean that will tell us if we need to update the tree
@@ -81,20 +78,23 @@ class Player(object):
 
     We will also update our training data here, and decide whether or not we need to rebuild the
         decision tree
-
-    TODO: find a way to update our score if we played the card?
     """
-    def update_card_to_board_state(self, card, result):
+    def update_card_to_boardstate(self, card, result):
+
+        print("UPDATE", card)
 
         #Construct an element of the training data
         datum = self.create_datum(card)
+
         datum.append(result)
         datum = tuple(datum)
 
         self.training_data.append(datum)
 
+        print(len(self.training_data))
+
         #If we have built a tree
-        if(len(self.training_data) > 1):
+        if(len(self.training_data) > 1 and self.hypothesis):
             #Figure out what our rule says about this card
             guess = self.guess_legal(datum)
 
@@ -107,6 +107,8 @@ class Player(object):
                 self.guesses_correct += 1
         else:
             self.rebuildTree = True
+
+        #print("REBUILD", self.rebuildTree)
 
         #Now we can update the board state
         if(result):
@@ -124,6 +126,8 @@ class Player(object):
 
         #Increase the total number of cards that we've seen
         self.total_cards += 1
+
+        print("UPDATED")
 
     """
     This takes in a card and returns the datum (without the classification, which will be added later)
@@ -175,17 +179,27 @@ class Player(object):
     """
     def scientist(self, game_ended):
         #quitting criteria
+
+        #print("SCIENTIST")
+
         quitting = (self.total_cards > 20) and (self.guesses_correct > 20)
 
         if(game_ended or quitting):
             #if we are ending the game
             if(not game_ended):
                 self.ended_game = True
+            if(self.hypothesis == None):
+                self.hypothesis = DecisionTree()
+                self.hypothesis.build_tree(self.training_data, self.ATTRIBUTES[-1], self.ATTRIBUTES)
+
             return self.hypothesis.get_rule()
         else:
             #if we need to rebuild the tree, rebuild it
             if(len(self.training_data) > 0 and self.rebuildTree):
+                if(self.hypothesis == None):
+                    self.hypothesis = DecisionTree()
                 #rebuild the tree
+                #print("REBUILDING")
                 self.hypothesis.build_tree(self.training_data, self.ATTRIBUTES[-1], self.ATTRIBUTES)
 
             #pick a card and refill hand
@@ -226,6 +240,7 @@ class Player(object):
     def check_equivalence(self, rule):
         try:
             hyp = parse(self.hypothesis.get_rule())
+            #print(self.hypothesis.get_rule())
             for prev2 in self.DECK:
                 for prev in self.DECK:
                     for curr in self.DECK:
@@ -233,7 +248,7 @@ class Player(object):
                         if rule.evaluate((prev2, prev, curr)) != hyp.evaluate((prev2, prev, curr)):
                             return False
             return True
-        except TypeError:
+        except :
             return False
 
     """
@@ -242,7 +257,8 @@ class Player(object):
     TODO: Make sure that this works with game_ended (being global and all)
             I think it does?
     """
-    def play(self):
+    def play(self, game_ended=False):
+        #from game import game_ended
         return self.scientist(game_ended)
 
     """
