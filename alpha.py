@@ -84,8 +84,6 @@ class Player(object):
     """
     def update_card_to_boardstate(self, card, result):
 
-        print("UPDATE", card)
-
         #Construct an element of the training data
         datum = self.create_datum(card)
 
@@ -93,8 +91,6 @@ class Player(object):
         datum = tuple(datum)
 
         self.training_data.append(datum)
-
-        print(len(self.training_data))
 
         #If we have built a tree
         if(len(self.training_data) > 1 and self.hypothesis):
@@ -120,17 +116,19 @@ class Player(object):
             self.BOARD[-1][1].append(card)
 
         #Increase our score (iff we played the card and it counts towards score)
+
+
         if(len(self.cards_played) > 20 and self.cards_played[-1] == self.total_cards):
             #if the card was legal
             if(result):
+                print("GS1")
                 self.game_score += 1
             else:
+                print("GS2")
                 self.game_score += 2
 
         #Increase the total number of cards that we've seen
         self.total_cards += 1
-
-        print("UPDATED")
 
     """
     This takes in a card and returns the datum (without the classification, which will be added later)
@@ -183,8 +181,6 @@ class Player(object):
     def scientist(self, game_ended):
         #quitting criteria
 
-        #print("SCIENTIST")
-
         quitting = (self.total_cards > 20) and (self.guesses_correct > 20)
 
         if(game_ended or quitting):
@@ -207,8 +203,8 @@ class Player(object):
 
             #pick a card and refill hand
             card = self.pick_card()
-            index = self.hand.index(card)
-            self.hand = self.hand[:index] + self.hand[index+1:] + [self.generate_random_card()]
+            #index = self.hand.index(card)
+            #self.hand = self.hand[:index] + self.hand[index+1:] + [self.generate_random_card()]
 
 
             #record what number card we played
@@ -221,6 +217,8 @@ class Player(object):
     This computes the score of the player
     """
     def score(self, rule):
+        print(self.game_score)
+        print(len(self.cards_played))
         equiv = self.check_equivalence(rule)
         if(equiv):
             self.game_score -= 75
