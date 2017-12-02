@@ -164,8 +164,6 @@ class Player(object):
 
     """
     Takes in a datum (create_datum(card)) and returns our hypothesis about whether the card is legal or not
-
-    TODO: Verify that this works
     """
     def guess_legal(self, datum):
 
@@ -177,14 +175,13 @@ class Player(object):
 
     """
     The core of the Player's decision making
-
-    TODO: Update quitting criterion
     """
     def scientist(self, game_ended):
         #quitting criteria
 
         #print("SCIENTIST")
 
+        # Decide if we are going to end the game or not
         quitting = (self.total_cards > 20) and (self.guesses_correct > 20)
 
         if(game_ended or quitting):
